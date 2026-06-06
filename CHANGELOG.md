@@ -6,11 +6,9 @@ Tracks language spec versions and compiler releases.
 
 ### [v0.7](pint-spec-v0.7.md)
 
-Based on v0.6. In progress.
+In progress.
 
 ### [v0.6](archive/pint-spec-v0.6.md)
-
-Based on v0.5.
 
 #### Assignment operator
 
@@ -45,8 +43,6 @@ Based on v0.5.
 - `\'` added to string literal escapes; `\"` added to character literal escapes — both delimiters are now valid escapes in both literal kinds
 
 ### [v0.5](archive/pint-spec-v0.5.md)
-
-Based on v0.4.
 
 #### Operators
 
@@ -103,8 +99,6 @@ Based on v0.4.
 - Functions: misplaced return-semantics paragraphs moved from `### Multi-return declaration syntax` to `### Return type`
 
 ### [v0.4](archive/pint-spec-v0.4.md)
-
-Based on v0.3.
 
 #### Types
 
@@ -173,8 +167,6 @@ Based on v0.3.
 - Future Directions section
 
 ### [v0.3](archive/pint-spec-v0.3.md)
-
-Based on v0.2.
 
 #### Syntax
 
