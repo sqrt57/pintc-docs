@@ -112,13 +112,12 @@ Railway-oriented programming style.
 **Claude confidence.** Decent but noticeably thinner corpus than C#. Claude occasionally
 drifts toward C#-isms (mutable variables, class hierarchies) inside F# files.
 
-**Existing precedent.** The traf compiler (Triton-A → x86) is F# — its architecture
-and design decisions are available at [github.com/sqrt57/traf](https://github.com/sqrt57/traf).
-This is the strongest argument for F#: there is already a working F# compiler for
-a closely related language to reference.
+**Prior work.** [traf](https://github.com/sqrt57/traf) is an abandoned F# compiler for
+Triton-A (the predecessor language). It covers lexing, parsing, and name resolution but
+has no type checker or codegen. Useful for AST and pipeline structure reference, not as
+a working blueprint.
 
-**Verdict.** Best language-level fit. The traf reference tips this above C# if you want
-to start from a working blueprint.
+**Verdict.** Best language-level fit. Slightly ahead of C# on ergonomics alone.
 
 ---
 
@@ -209,7 +208,7 @@ dependency-free compiler binary. Slower development pace than any typed candidat
 | Language | AST quality | Binary I/O | Error threading | Claude speed | Verdict |
 |---|---|---|---|---|---|
 | **C#** | ★★★★☆ | ★★★★★ | ★★★☆☆ | ★★★★★ | Fastest implementation |
-| **F#** | ★★★★★ | ★★★★★ | ★★★★☆ | ★★★★☆ | Best fit + traf reference |
+| **F#** | ★★★★★ | ★★★★★ | ★★★★☆ | ★★★★☆ | Best fit, partial traf reference |
 | **Rust** | ★★★★★ | ★★★★★ | ★★★★★ | ★★★★★ | Best long-term, some tree friction |
 | **Go** | ★★★☆☆ | ★★★★☆ | ★★★★☆ | ★★★★★ | Fast start, verbose compiler |
 | **Zig** | ★★★★★ | ★★★★★ | ★★★★☆ | ★★★☆☆ | Aligned, weaker Claude support |
@@ -221,13 +220,13 @@ dependency-free compiler binary. Slower development pace than any typed candidat
 
 ## Recommendation
 
-**F# or C#**, with F# slightly ahead if the traf codebase will be consulted
-as a reference.
+**F# or C#**, with F# slightly ahead on language ergonomics alone.
 
-- F# gives better language ergonomics (DUs, exhaustive match, pipeline style) and
-  the traf compiler is a working blueprint for a nearly identical problem.
+- F# gives better language ergonomics (DUs, exhaustive match, pipeline style).
+  [traf](https://github.com/sqrt57/traf) (abandoned F# compiler for Triton-A) covers
+  lexing, parsing, and name resolution — useful for structural reference, not a complete blueprint.
 - C# gives marginally faster Claude iteration and slightly more idiomatic binary I/O.
-  If traf is not a reference point, C# closes the gap.
+  No prior F# work is required to be productive here.
 
 **Rust** is the right choice if correctness and long-term maintainability outweigh
 initial velocity — the borrow checker pays dividends as the codebase grows. It
