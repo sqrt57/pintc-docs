@@ -8,7 +8,10 @@ Pint is a minimal systems language targeting Win32 native binary (x86).
 
 - **[pint-spec-v0.7.md](pint-spec-v0.7.md)** — active language spec
 - **[CHANGELOG.md](CHANGELOG.md)** — spec version history and compiler releases
-- **[ROADMAP.md](ROADMAP.md)** — pre-implementation checklist and future work
+- **[ROADMAP.md](ROADMAP.md)** — pre-implementation checklist, architecture decisions, and future work
+- **[pintc-impl.md](pintc-impl.md)** — compiler implementation design (phases, AST, codegen, PE32)
+- **[pintc-cli.md](pintc-cli.md)** — compiler command-line interface *(planned)*
+- **[pint-grammar.md](pint-grammar.md)** — formal EBNF grammar *(planned)*
 - **[implementation-platform.md](implementation-platform.md)** — platform decision record
 - **[archive/](archive/README.md)** — superseded spec versions (v0.1–v0.6)
 
