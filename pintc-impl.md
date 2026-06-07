@@ -1,7 +1,8 @@
 # pintc Implementation
 
 C# compiler for the Pint language. Produces Win32 native binaries (x86 PE32).
-See [pint-spec-v0.7.md](pint-spec-v0.7.md) for the language and
+See [pint-spec-v0.7.md](pint-spec-v0.7.md) for the language,
+[pint-grammar.md](pint-grammar.md) for the formal grammar, and
 [pintc-cli.md](pintc-cli.md) for the command-line interface.
 
 ---

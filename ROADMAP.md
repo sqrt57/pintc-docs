@@ -4,8 +4,8 @@
 
 Decisions and artifacts needed before writing the compiler:
 
-- **Formal grammar** — separate file `pint-grammar.md`; EBNF for implementor reference and LLM use.
-- **Command line** — separate file `pintc-cli.md` (in `pintc-docs`); input files, output file, target flags, error format.
+- **Formal grammar** — ✓ [pint-grammar.md](pint-grammar.md); Go-style EBNF for implementor reference and LLM use.
+- **Command line** — ✓ [pintc-cli.md](pintc-cli.md); input files, output file, target flags, error format.
 - **Implementation platform** — ✓ C#. Project `pintc-cs`, binary `pintc`. Analysis: [implementation-platform.md](implementation-platform.md).
 
 ## Implementation

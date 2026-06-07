@@ -20,7 +20,7 @@ Dominant influences:
 LLM-friendly by design: the spec is small enough to fit in a context window, and
 the language consistent enough that correct code can be generated from it with
 minimal examples. Special cases and implicit rules are the enemy of both human
-readers and code-generating models.
+readers and code-generating models. Formal grammar: [pint-grammar.md](pint-grammar.md).
 
 Error messages are actionable: they name the source location, the rule violated,
 and what to do instead. A message that requires reading the spec to act on is a
