@@ -12,35 +12,92 @@ Decisions and artifacts needed before writing the compiler:
 
 Design: [pintc-impl.md](pintc-impl.md)
 
-### Phases
+Slice 1 produces a real, runnable PE32 exe from a narrow subset of Pint.
+Each subsequent slice adds one feature group end-to-end — touching every phase from
+lexer to PE emit. The compiler always builds and runs between slices.
 
-Single-pass pipeline — each phase transforms one representation into the next.
-No optimisation passes in v1.
+### Slice 1 — End-to-end skeleton
 
-| Phase | Input | Output |
-|---|---|---|
-| Lex | Source text | Token stream |
-| Parse | Token stream | AST |
-| Resolve | AST | AST (names bound, imports wired) |
-| Type-check | AST (names bound) | Typed AST |
-| Codegen | Typed AST | x86 machine code |
-| PE emit | x86 machine code + metadata | PE32 binary |
+Target program:
 
-### Intermediate representations
+```pint
+module main {
 
-- **AST** — untyped; direct parser output; nodes carry source spans for error reporting.
-- **Typed AST** — AST annotated with resolved types and name bindings; the only IR in v1; both type-checker and codegen operate on it.
+    [dll_import(dll="kernel32.dll", entry_point="ExitProcess")]
+    [noreturn]
+    extern fun exit_process(code: u32) -> ();
 
-No SSA or three-address IR in v1 — the language is simple enough that direct stack-based codegen from the typed AST is tractable.
+    [win32_entry]
+    [noreturn]
+    fun main() -> () {
+        exit_process(0);
+    }
+}
+```
 
-### Code generation strategy
+Produces a real Windows EXE that exits cleanly.
 
-Stack-based x86 for v1: all temporaries spill to the stack; no register allocator.
-Produces correct code; register allocation and peephole optimisation deferred to future work.
+| Step | Deliverable |
+|---|---|
+| Scaffolding | `Pintc.sln`, `Pintc/`, `Pintc.Tests/`, `Program.cs` CLI stub |
+| Lexer (subset) | Keywords (`module`, `extern`, `fun`), identifiers, integer literals, string literals, punctuation |
+| Parser (subset) | Module decl, extern decl with `[dll_import]`, fun decl with `[win32_entry]`/`[noreturn]`, call expr, int literal |
+| Resolver (subset) | Single-module only; bind call targets to extern decls |
+| Type checker (subset) | Structural pass-through; verify call arity only |
+| Codegen (subset) | Function prologue/epilogue, push literal, stdcall call, `ret` |
+| PE32 writer (subset) | DOS stub + COFF + Optional header + `.text` + `.idata` (single import DLL) |
+| CLI | `pintc source.pnt` → `source.exe` |
 
-### Output
+### Slice 2 — Arithmetic and locals
 
-Writes PE32 directly — no dependency on an assembler or linker.
+Integer arithmetic (`+`, `-`, `*`, `/`, `%`), comparison operators (`<`, `>`, `<=`, `>=`,
+`==`, `!=`), boolean literals and logic (`and`, `or`, `not`), local variables (`var`),
+module-level constants (`const`).
+
+### Slice 3 — Conditionals
+
+`if`/`else` statements.
+
+### Slice 4 — Loops
+
+`while`, `loop`, `break`, `continue`.
+
+### Slice 5 — `for`
+
+`for` statements.
+
+### Slice 6 — Records and type aliases
+
+Record declarations, record literals, field access (`.`), `type` aliases.
+
+### Slice 7 — Enums
+
+Enum declarations, variant references, enum equality.
+
+### Slice 8 — Arrays
+
+Array types, array literals, index expressions.
+
+### Slice 9 — Pointers
+
+Pointer types (`^T`), address-of, dereference, arrow (`->`), pointer arithmetic.
+
+### Slice 10 — Multiple return values
+
+Tuple return types, multi-assign statements, hidden pointer calling convention.
+
+### Slice 11 — Strings, chars, floats
+
+String literals (`.rdata`), char literals, `f32`/`f64` arithmetic.
+
+### Slice 12 — Multi-module
+
+`import`/`export`, cross-module name resolution, module-scope `var` (`.data` section),
+DLL output (`.edata`).
+
+### Slice 13 — Builtins
+
+`cast`, `sizeof`, `divmod`, `mul`, `length`, `to_*` conversion builtins.
 
 ## Future Work
 
