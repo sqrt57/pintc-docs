@@ -13,26 +13,18 @@ See [pint-spec-v0.7.md](pint-spec-v0.7.md) for the language,
 pintc-cs/
   Pintc.sln
   Pintc/
-    Lexer/
-      Token.cs          ← token kinds and the Token record
-      Lexer.cs
-    Parser/
-      Parser.cs
-    Ast/
-      Nodes.cs          ← all AST node types
-    Resolver/
-      Resolver.cs       ← name binding, module wiring
-    TypeChecker/
-      TypeChecker.cs
-      TypeContext.cs    ← symbol tables and type annotations
-    CodeGen/
-      CodeGen.cs        ← typed AST → x86 bytes
-      X86.cs            ← instruction encoding helpers
-    Pe/
-      PeWriter.cs       ← PE32 binary writer
-    Diagnostics/
-      Diagnostic.cs
-    Program.cs          ← CLI entry point
+    Token.cs          ← token kinds and the Token record
+    Lexer.cs
+    Ast.cs            ← all AST node types
+    Parser.cs
+    Resolver.cs       ← name binding, module wiring
+    TypeChecker.cs
+    TypeContext.cs    ← symbol tables and type annotations
+    CodeGen.cs        ← typed AST → x86 bytes
+    X86.cs            ← instruction encoding helpers
+    PeWriter.cs       ← PE32 binary writer
+    Diagnostic.cs
+    Program.cs        ← CLI entry point
   Pintc.Tests/
     ...
 ```

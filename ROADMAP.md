@@ -10,7 +10,7 @@ Decisions and artifacts needed before writing the compiler:
 
 ## Implementation
 
-Design: [pintc-impl.md](pintc-impl.md)
+Design: [pintc-cs-impl.md](pintc-cs-impl.md)
 
 Slice 1 produces a real, runnable PE32 exe from a narrow subset of Pint.
 Each subsequent slice adds one feature group end-to-end — touching every phase from
