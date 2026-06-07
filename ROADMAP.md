@@ -12,9 +12,44 @@ Decisions and artifacts needed before writing the compiler:
 
 Design: [pintc-cs-impl.md](pintc-cs-impl.md)
 
+Slices are vertical — each adds one feature group end-to-end, touching every phase from
+lexer to PE emit. This surfaces integration bugs early, when they are cheap to fix, and
+keeps the compiler buildable and runnable throughout. The alternative (completing one
+phase at a time) defers integration to the end and leaves intermediate phases untestable
+in isolation.
+
 Slice 1 produces a real, runnable PE32 exe from a narrow subset of Pint.
 Each subsequent slice adds one feature group end-to-end — touching every phase from
 lexer to PE emit. The compiler always builds and runs between slices.
+
+### Testing
+
+#### Unit tests
+
+The lexer and parser both take source text as input, so their tests follow the same shape:
+feed in a source string, check the output. Lexer tests are table-driven — one row per
+scenario. Parser tests use golden snapshots of the serialized AST. The PE32 writer is tested by feeding it a pre-built `CodeUnit` and verifying the output
+structure with `dumpbin` or direct header byte assertions.
+
+#### Integration tests
+
+The **resolver** and **type checker** are tested by running source text through
+lex → parse → resolve → type-check and asserting on the collected diagnostics. This is
+cheaper than end-to-end (no codegen or PE emit) and more realistic than constructing
+AST nodes by hand. Both valid-program cases (no diagnostics) and error cases (undefined
+name, wrong arity, type mismatch) are covered this way.
+
+#### End-to-end tests
+
+One per slice: compile a `.pnt` source file, run the resulting EXE, check the exit code.
+These are the primary correctness signal for codegen and PE emit, and the final check
+that all phases integrate correctly. As the slice count grows, the suite doubles as a
+regression guard — a passing slice N test confirms that slice N−1 features still work.
+
+#### Not tested in isolation
+
+**Codegen** has no dedicated tests — byte-level output comparison is brittle.
+End-to-end tests cover its correctness through behavior.
 
 ### Slice 1 — End-to-end skeleton
 

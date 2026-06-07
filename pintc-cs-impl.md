@@ -88,8 +88,8 @@ Unresolved names are errors reported in bulk at the end of the binding pass.
 Walks the bound AST bottom-up, inferring and checking types. Produces a
 `TypeContext`:
 
-- `Dictionary<int, PintType> NodeTypes` — resolved type of every `Expr` node
-- `Dictionary<Decl, PintType> DeclTypes` — type of every declaration
+- `Dictionary<int, PintType> NodeTypes` — key: `NodeId` (unique int stamped on each `Expr` by the parser); value: the resolved `PintType` of that expression. Codegen consults this to know the type at each point in the tree.
+- `Dictionary<Decl, PintType> DeclTypes` — key: a `Decl` node (function, variable, parameter, etc.); value: the declared or inferred `PintType` of that declaration. Used by the resolver and codegen to look up the type of any named entity.
 
 `PintType` is a discriminated union (C# abstract record hierarchy):
 `PrimitiveType`, `PointerType`, `ArrayType`, `RecordType`, `EnumType`,
