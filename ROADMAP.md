@@ -40,13 +40,13 @@ Produces a real Windows EXE that exits cleanly.
 | Step | Deliverable |
 |---|---|
 | Scaffolding | `Pintc.sln`, `Pintc/`, `Pintc.Tests/`, `Program.cs` CLI stub |
+| CLI | `pintc source.pnt` → `source.exe`; stub pipeline, no real compilation yet |
+| PE32 writer (subset) | DOS stub + COFF + Optional header + `.text` + `.idata` (single import DLL); emit hardcoded EXE and verify it runs |
+| Codegen (subset) | Function prologue/epilogue, push literal, stdcall call, `ret`; feed hardcoded AST into PE32 writer |
 | Lexer (subset) | Keywords (`module`, `extern`, `fun`), identifiers, integer literals, string literals, punctuation |
 | Parser (subset) | Module decl, extern decl with `[dll_import]`, fun decl with `[win32_entry]`/`[noreturn]`, call expr, int literal |
 | Resolver (subset) | Single-module only; bind call targets to extern decls |
 | Type checker (subset) | Structural pass-through; verify call arity only |
-| Codegen (subset) | Function prologue/epilogue, push literal, stdcall call, `ret` |
-| PE32 writer (subset) | DOS stub + COFF + Optional header + `.text` + `.idata` (single import DLL) |
-| CLI | `pintc source.pnt` → `source.exe` |
 
 ### Slice 2 — Module variables
 
