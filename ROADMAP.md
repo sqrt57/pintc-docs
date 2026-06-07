@@ -48,6 +48,20 @@ Produces a real Windows EXE that exits cleanly.
 | Resolver (subset) | Single-module only; bind call targets to extern decls |
 | Type checker (subset) | Structural pass-through; verify call arity only |
 
+#### Tests
+
+| Step | How to verify |
+|---|---|
+| Scaffolding | `dotnet build` succeeds; `dotnet test` runs with zero failures |
+| CLI | `pintc foo.pnt` runs without crashing; exits with a clear error (not implemented) |
+| PE32 writer | Hardcoded EXE runs on Windows; exit code matches expected value; `dumpbin /headers` and `dumpbin /imports` show correct structure |
+| Codegen | Compile target program from hardcoded AST; run EXE; assert exit code 0; unit-test emitted x86 byte sequences |
+| Lexer | Table-driven unit tests: source string → expected token list; cover every token type needed by the target program |
+| Parser | Unit tests: source string → expected AST (compare pretty-printed or serialized form against golden output) |
+| Resolver | Assert call to `exit_process` binds to the extern decl; assert unknown identifier produces an error |
+| Type checker | Assert target program passes with no errors; assert wrong-arity call produces the correct error |
+| End-to-end | Compile the target program source file; run the EXE; assert exit code 0 |
+
 ### Slice 2 — Module variables
 
 Module-scope `var` for integer and bool types; `.data` section in PE32.
