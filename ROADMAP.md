@@ -48,56 +48,95 @@ Produces a real Windows EXE that exits cleanly.
 | PE32 writer (subset) | DOS stub + COFF + Optional header + `.text` + `.idata` (single import DLL) |
 | CLI | `pintc source.pnt` → `source.exe` |
 
-### Slice 2 — Arithmetic and locals
+### Slice 2 — Module variables
 
-Integer arithmetic (`+`, `-`, `*`, `/`, `%`), comparison operators (`<`, `>`, `<=`, `>=`,
-`==`, `!=`), boolean literals and logic (`and`, `or`, `not`), local variables (`var`),
-module-level constants (`const`).
+Module-scope `var` for integer and bool types; `.data` section in PE32.
 
-### Slice 3 — Conditionals
+### Slice 3 — Local variables
+
+`var` declarations inside function bodies; stack slot allocation.
+
+### Slice 4 — Expressions
+
+Integer arithmetic (`+`, `-`, `*`, `/`, `%`), comparison (`<`, `>`, `<=`, `>=`, `==`, `!=`),
+boolean logic (`and`, `or`, `not`), bitwise (`&`, `|`, `~`, `xor`), shift (`<<`, `>>`),
+unary (`-`, `~`), full operator precedence table.
+
+### Slice 5 — if/else
 
 `if`/`else` statements.
 
-### Slice 4 — Loops
+### Slice 6 — while, loop, break, continue
 
 `while`, `loop`, `break`, `continue`.
 
-### Slice 5 — `for`
+### Slice 7 — for
 
 `for` statements.
 
-### Slice 6 — Records and type aliases
-
-Record declarations, record literals, field access (`.`), `type` aliases.
-
-### Slice 7 — Enums
-
-Enum declarations, variant references, enum equality.
-
 ### Slice 8 — Arrays
 
-Array types, array literals, index expressions.
+Array types (`[N]T`), index expressions (`a[i]`), element assignment (`a[i] = v`).
 
-### Slice 9 — Pointers
+### Slice 9 — Records
 
-Pointer types (`^T`), address-of, dereference, arrow (`->`), pointer arithmetic.
+Record declarations, field access (`.`).
 
-### Slice 10 — Multiple return values
+### Slice 10 — Pointers
+
+Pointer types (`^T`), address-of (`@`), dereference (`p^`), arrow (`->`), pointer arithmetic.
+
+### Slice 11 — Modules
+
+`import`/`export`, cross-module name resolution, multi-file compilation, DLL output (`.edata`).
+
+### Slice 12 — Local constants
+
+`const` at function scope.
+
+### Slice 13 — Module constants
+
+`const` at module scope; compile-time expression evaluation.
+
+### Slice 14 — Strings and char literals
+
+String literals (`.rdata`), `string` type (`.ptr`, `.len`), char literals (`byte`).
+
+### Slice 15 — Multiple return values
 
 Tuple return types, multi-assign statements, hidden pointer calling convention.
 
-### Slice 11 — Strings, chars, floats
+### Slice 16 — Builtins
 
-String literals (`.rdata`), char literals, `f32`/`f64` arithmetic.
+`cast`, `sizeof`, `divmod`, `mul`, `length`, `to_i8`…`to_u32`.
 
-### Slice 12 — Multi-module
+### Slice 17 — Named arguments
 
-`import`/`export`, cross-module name resolution, module-scope `var` (`.data` section),
-DLL output (`.edata`).
+Named call syntax (`f(a: x, b: y)`); order-independent argument passing.
 
-### Slice 13 — Builtins
+### Slice 18 — Named return values
 
-`cast`, `sizeof`, `divmod`, `mul`, `length`, `to_*` conversion builtins.
+Named return list in function signatures; named unpack at call site.
+
+### Slice 19 — Array literals
+
+Array literal expressions (`[1, 2, 3]`); element type inferred from context.
+
+### Slice 20 — Record literals
+
+Record literal expressions (`{ x: 1, y: 2 }`); type inferred from context.
+
+### Slice 21 — Enums
+
+Enum declarations, variant references (`E.Member`), equality, cast to/from underlying type.
+
+### Slice 22 — Named break/continue
+
+Labels on loops; `break label` and `continue label` for nested loop control.
+
+### Slice 23 — Floats
+
+`f32`/`f64` literals, arithmetic, and comparisons; FPU stack codegen (x87).
 
 ## Future Work
 
