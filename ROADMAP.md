@@ -99,9 +99,10 @@ Produces a real Windows EXE that exits cleanly.
 
 Slice 1 is complete. All steps done; 124 tests passing (119 unit, 2 integration, 3 e2e).
 
-### Slice 2 — Module variables
+### Slice 2 — Module variables ✓
 
 Module-scope `var` for integer and bool types; `.data` section in PE32.
+129 tests passing (123 unit, 2 integration, 4 e2e).
 
 ### Slice 3 — Local variables
 
