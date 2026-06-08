@@ -26,7 +26,7 @@ See [pint-spec-v0.7.md](pint-spec-v0.7.md) for the language,
 
 ```
 pintc-cs/
-  Pintc.sln
+  Pintc.slnx
   Pintc/
     Token.cs          ← token kinds and the Token record
     Lexer.cs
@@ -41,8 +41,28 @@ pintc-cs/
     Diagnostic.cs
     Program.cs        ← CLI entry point
   Pintc.Tests/
-    ...
+    ...               ← unit and integration tests
+  Pintc.E2eTests/
+    Helpers/
+      CompilerRunner.cs   ← invokes pintc, runs output EXE, returns exit code + output
+    Slice1Tests.cs
+    ...               ← one test class per slice
 ```
+
+### E2e test project
+
+`Pintc.E2eTests` is a separate xUnit project (not a project reference to `Pintc`).
+Each test:
+
+1. Writes a source string to a temp directory.
+2. Invokes `pintc` via `CompilerRunner.Compile` — uses `PINTC_EXE` env var if set
+   (CI with a published binary), otherwise falls back to `dotnet run --project Pintc`.
+3. Asserts compile exit code 0.
+4. Runs the resulting EXE via `CompilerRunner.Execute`.
+5. Asserts run exit code.
+
+Temp directories are created in the test constructor and deleted in `Dispose`.
+Source text is inlined in each test class so the test is self-contained.
 
 ---
 
