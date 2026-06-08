@@ -41,17 +41,27 @@ pintc-cs/
     Diagnostic.cs
     Program.cs        ← CLI entry point
   Pintc.Tests/
-    ...               ← unit and integration tests
+    ...                     ← unit tests — pure in-process, no OS interaction
+  Pintc.IntegrationTests/
+    ...                     ← integration tests — compiler internals + OS (runs EXEs)
   Pintc.E2eTests/
     Helpers/
-      CompilerRunner.cs   ← invokes pintc, runs output EXE, returns exit code + output
+      CompilerRunner.cs     ← invokes pintc, runs output EXE, returns exit code + output
     Slice1Tests.cs
-    ...               ← one test class per slice
+    ...                     ← one test class per slice
 ```
+
+### Test project boundaries
+
+| Project | References `Pintc`? | OS interaction? | What goes here |
+|---|---|---|---|
+| `Pintc.Tests` | yes | no | Lexer, parser, resolver, type checker, byte assertions |
+| `Pintc.IntegrationTests` | yes | yes | Components that produce real files or run EXEs (e.g. PE writer) |
+| `Pintc.E2eTests` | no | yes | Full pipeline: source file → `pintc` subprocess → run output EXE |
 
 ### E2e test project
 
-`Pintc.E2eTests` is a separate xUnit project (not a project reference to `Pintc`).
+`Pintc.E2eTests` has no project reference to `Pintc` — it treats the compiler as a black box.
 Each test:
 
 1. Writes a source string to a temp directory.
