@@ -7,6 +7,21 @@ See [pint-spec-v0.7.md](pint-spec-v0.7.md) for the language,
 
 ---
 
+## Toolchain
+
+| Concern | Choice |
+|---|---|
+| **.NET version** | .NET 10 (LTS) |
+| **Build** | `dotnet` CLI, standard `.sln` / `.csproj` — no build orchestration layer |
+| **CLI parsing** | Manual — the CLI is simple enough that a library would be dead weight |
+| **Unit tests** | xUnit |
+| **Mocking** | NSubstitute — add when first needed |
+| **Assertions** | Shouldly — add when first needed |
+| **Parser** | Hand-written recursive descent — no parser generator |
+| **Codegen / PE32** | Written by hand — no assembler or linker dependency |
+
+---
+
 ## Repository layout
 
 ```
