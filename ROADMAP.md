@@ -109,11 +109,12 @@ Module-scope `var` for integer and bool types; `.data` section in PE32.
 `var` declarations inside function bodies; stack slot allocation.
 140 tests passing (131 unit, 4 integration, 5 e2e).
 
-### Slice 4 — Expressions
+### Slice 4 — Expressions ✓
 
-Integer arithmetic (`+`, `-`, `*`, `/`, `%`), comparison (`<`, `>`, `<=`, `>=`, `==`, `!=`),
-boolean logic (`and`, `or`, `not`), bitwise (`&`, `|`, `~`, `xor`), shift (`<<`, `>>`),
-unary (`-`, `~`), full operator precedence table.
+Binary operators: arithmetic (`+`, `-`, `*`, `/`, `%`), comparison (`<`, `>`, `<=`, `>=`, `==`, `!=`),
+boolean logic (`and`, `or`), bitwise (`&`, `|`, `xor`), shift (`<<`, `>>`).
+Unary operators: `-`, `~`, `not`. Bool literals (`true`, `false`). Full operator precedence table.
+142 tests passing (131 unit, 4 integration, 7 e2e).
 
 ### Slice 5 — if/else
 

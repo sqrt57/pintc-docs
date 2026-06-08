@@ -2,6 +2,32 @@
 
 Tracks language spec versions and compiler releases.
 
+## Compiler
+
+#### Slice 4 — Expressions
+
+- Binary operators: arithmetic (`+`, `-`, `*`, `/`, `%`), bitwise (`&`, `|`, `xor`), shift (`<<`, `>>`), comparison (`<`, `>`, `<=`, `>=`, `==`, `!=`), logical (`and`, `or`)
+- Unary operators: `-` (negation), `~` (bitwise NOT), `not` (boolean NOT)
+- `true` / `false` bool literals
+- Full operator precedence table; parentheses override precedence
+- 142 tests (131 unit, 4 integration, 7 e2e)
+
+#### Slice 3 — Local variables
+
+- `var` declarations inside function bodies; stack slot allocation via `[ebp−disp8]`
+- 140 tests (131 unit, 4 integration, 5 e2e)
+
+#### Slice 2 — Module variables
+
+- Module-scope `var` for integer and bool types; `.data` section in PE32
+- 129 tests (123 unit, 2 integration, 4 e2e)
+
+#### Slice 1 — End-to-end skeleton
+
+- Lex → parse → resolve → type-check → codegen → PE32 emit pipeline
+- Win32 EXE output; `[dll_import]` / `[win32_entry]` / `[noreturn]` attributes; stdcall FFI
+- 124 tests (119 unit, 2 integration, 3 e2e)
+
 ## Language Spec
 
 ### [v0.7](pint-spec-v0.7.md)
