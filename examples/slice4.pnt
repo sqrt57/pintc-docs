@@ -1,0 +1,34 @@
+module main {
+
+    [dll_import(dll="kernel32.dll", entry_point="ExitProcess")]
+    [noreturn]
+    extern fun exit_process(code: u32) -> ();
+
+    [win32_entry]
+    [noreturn]
+    fun main() -> () {
+        var a: u32 = 4 + 6;
+        var b: u32 = a * 3;
+        var c: u32 = b - 10;
+        var d: u32 = c / 4;
+        var e: u32 = d % 5;
+        var f: u32 = 255 & 15;
+        var g: u32 = 0 | 0;
+        var h: u32 = 15 xor 15;
+        var i: u32 = ~(~g);
+        var j: u32 = 1 << 4;
+        var k: u32 = j >> 4;
+        var l: u32 = k - 1;
+        var m: u32 = -l;
+        var eq:   bool = 5 == 5;
+        var ne:   bool = 5 != 4;
+        var lt:   bool = 3 < 4;
+        var le:   bool = 3 <= 3;
+        var gt:   bool = 4 > 3;
+        var ge:   bool = 4 >= 4;
+        var band: bool = true and true;
+        var bor:  bool = false or true;
+        var bnot: bool = not false;
+        exit_process(m);
+    }
+}
