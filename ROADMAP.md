@@ -104,9 +104,10 @@ Slice 1 is complete. All steps done; 124 tests passing (119 unit, 2 integration,
 Module-scope `var` for integer and bool types; `.data` section in PE32.
 129 tests passing (123 unit, 2 integration, 4 e2e).
 
-### Slice 3 — Local variables
+### Slice 3 — Local variables ✓
 
 `var` declarations inside function bodies; stack slot allocation.
+140 tests passing (131 unit, 4 integration, 5 e2e).
 
 ### Slice 4 — Expressions
 
