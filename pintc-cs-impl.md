@@ -35,7 +35,7 @@ pintc-cs/
     Resolver.cs       ← name binding, module wiring
     TypeChecker.cs
     TypeContext.cs    ← symbol tables and type annotations
-    CodeGen.cs        ← typed AST → x86 bytes
+    Codegen.cs        ← typed AST → x86 bytes
     X86.cs            ← instruction encoding helpers
     PeWriter.cs       ← PE32 binary writer
     Diagnostic.cs
