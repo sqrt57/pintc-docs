@@ -1,0 +1,46 @@
+module main {
+
+    [dll_import(dll="kernel32.dll", entry_point="ExitProcess")]
+    [noreturn]
+    extern fun exit_process(code: u32) -> ();
+
+    [win32_entry]
+    [noreturn]
+    fun main() -> () {
+        // if not taken: false condition skips body
+        if (false) { exit_process(1); }
+
+        // if/else: false condition takes else-branch
+        if (false) { exit_process(2); } else { }
+
+        // if/else: true condition takes then-branch
+        if (true) { } else { exit_process(3); }
+
+        // condition from expression
+        var a: u32 = 4 + 3;
+        if (a != 7) { exit_process(4); }
+
+        // else if chain: middle branch matches
+        var x: u32 = 2;
+        if (x == 1) {
+            exit_process(5);
+        } else if (x == 2) {
+        } else {
+            exit_process(6);
+        }
+
+        // nested if/else
+        var p: u32 = 5;
+        var q: u32 = 10;
+        if (p < q) {
+            if (p != q) {
+            } else {
+                exit_process(7);
+            }
+        } else {
+            exit_process(8);
+        }
+
+        exit_process(0);
+    }
+}
