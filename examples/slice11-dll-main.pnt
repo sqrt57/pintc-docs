@@ -1,0 +1,16 @@
+module main {
+    [dll_import(dll="kernel32.dll", entry_point="ExitProcess")]
+    [noreturn]
+    extern fun exit_process(code: u32) -> ();
+
+    [dll_import(dll="mathlib.dll", entry_point="add")]
+    extern fun math_add(a: u32, b: u32) -> u32;
+
+    [win32_entry]
+    [noreturn]
+    fun main() -> () {
+        var result: u32 = math_add(3, 4);
+        if (result != 7) { exit_process(1); }
+        exit_process(0);
+    }
+}

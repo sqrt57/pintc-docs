@@ -1,0 +1,22 @@
+module Calc {
+    fun add(a: u32, b: u32) -> u32 {
+        return a + b;
+    }
+    export add;
+}
+
+module main {
+    [dll_import(dll="kernel32.dll", entry_point="ExitProcess")]
+    [noreturn]
+    extern fun exit_process(code: u32) -> ();
+
+    import Calc as C;
+
+    [win32_entry]
+    [noreturn]
+    fun main() -> () {
+        var result: u32 = C.add(3, 4);
+        if (result != 7) { exit_process(1); }
+        exit_process(0);
+    }
+}

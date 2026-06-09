@@ -98,16 +98,19 @@ Produces a real Windows EXE that exits cleanly.
 | ✓ End-to-end | Compile the target program source file; run the EXE; assert exit code 0 |
 
 Slice 1 is complete. All steps done; 124 tests passing (119 unit, 2 integration, 3 e2e).
+E2e: [slice1.pnt](examples/slice1.pnt).
 
 ### Slice 2 — Module variables ✓
 
 Module-scope `var` for integer and bool types; `.data` section in PE32.
 129 tests passing (123 unit, 2 integration, 4 e2e).
+E2e: [slice2.pnt](examples/slice2.pnt).
 
 ### Slice 3 — Local variables ✓
 
 `var` declarations inside function bodies; stack slot allocation.
 140 tests passing (131 unit, 4 integration, 5 e2e).
+E2e: [slice3.pnt](examples/slice3.pnt).
 
 ### Slice 4 — Expressions ✓
 
@@ -115,40 +118,51 @@ Binary operators: arithmetic (`+`, `-`, `*`, `/`, `%`), comparison (`<`, `>`, `<
 boolean logic (`and`, `or`), bitwise (`&`, `|`, `xor`), shift (`<<`, `>>`).
 Unary operators: `-`, `~`, `not`. Bool literals (`true`, `false`). Full operator precedence table.
 142 tests passing (131 unit, 4 integration, 7 e2e).
+E2e: [slice4.pnt](examples/slice4.pnt), [slice4-precedence.pnt](examples/slice4-precedence.pnt).
 
 ### Slice 5 — if/else ✓
 
 `if`/`else` statements; `else if` chains; nested blocks.
 143 tests passing (131 unit, 4 integration, 8 e2e).
+E2e: [slice5.pnt](examples/slice5.pnt).
 
 ### Slice 6 — while, loop, break, continue ✓
 
 `while`, `loop`, `break`, `continue`. Local variable assignment (`name = expr`).
 151 tests passing (138 unit, 4 integration, 9 e2e).
+E2e: [slice6.pnt](examples/slice6.pnt).
 
 ### Slice 7 — for ✓
 
 `for` statements.
 152 tests passing (138 unit, 4 integration, 10 e2e).
+E2e: [slice7.pnt](examples/slice7.pnt).
 
 ### Slice 8 — Arrays ✓
 
 Array types (`[N]T`), index expressions (`a[i]`), element assignment (`a[i] = v`).
 153 tests passing (138 unit, 4 integration, 11 e2e).
+E2e: [slice8.pnt](examples/slice8.pnt).
 
 ### Slice 9 — Records ✓
 
 Record declarations, field access (`.`), nested records.
 154 tests passing (138 unit, 4 integration, 12 e2e).
+E2e: [slice9-records.pnt](examples/slice9-records.pnt).
 
 ### Slice 10 — Pointers ✓
 
 Pointer types (`^T`), address-of (`@`), dereference (`p^`), arrow (`->`), pointer arithmetic.
 155 tests passing (138 unit, 4 integration, 13 e2e).
+E2e: [slice10-pointers.pnt](examples/slice10-pointers.pnt).
 
 ### Slice 11 — Modules
 
 `import`/`export`, cross-module name resolution, multi-file compilation, DLL output (`.edata`).
+
+E2e target programs: [slice11.pnt](examples/slice11.pnt) (import/export, single file),
+[slice11-multifile-calc.pnt](examples/slice11-multifile-calc.pnt) + [slice11-multifile-main.pnt](examples/slice11-multifile-main.pnt) (multi-file compilation),
+[slice11-dll-lib.pnt](examples/slice11-dll-lib.pnt) + [slice11-dll-main.pnt](examples/slice11-dll-main.pnt) (DLL output and import).
 
 ### Slice 12 — Local constants
 
