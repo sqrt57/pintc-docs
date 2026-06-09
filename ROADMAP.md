@@ -116,9 +116,10 @@ boolean logic (`and`, `or`), bitwise (`&`, `|`, `xor`), shift (`<<`, `>>`).
 Unary operators: `-`, `~`, `not`. Bool literals (`true`, `false`). Full operator precedence table.
 142 tests passing (131 unit, 4 integration, 7 e2e).
 
-### Slice 5 — if/else
+### Slice 5 — if/else ✓
 
-`if`/`else` statements.
+`if`/`else` statements; `else if` chains; nested blocks.
+143 tests passing (131 unit, 4 integration, 8 e2e).
 
 ### Slice 6 — while, loop, break, continue
 

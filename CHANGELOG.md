@@ -4,6 +4,13 @@ Tracks language spec versions and compiler releases.
 
 ## Compiler
 
+#### Slice 5 — if/else
+
+- `if (cond) { }` and `if (cond) { } else { }` statements
+- `else if` chains; arbitrarily nested if/else
+- Codegen: conditional jump (`jz rel32`) with backpatching; unconditional (`jmp rel32`) for else skip
+- 143 tests (131 unit, 4 integration, 8 e2e)
+
 #### Slice 4 — Expressions
 
 - Binary operators: arithmetic (`+`, `-`, `*`, `/`, `%`), bitwise (`&`, `|`, `xor`), shift (`<<`, `>>`), comparison (`<`, `>`, `<=`, `>=`, `==`, `!=`), logical (`and`, `or`)

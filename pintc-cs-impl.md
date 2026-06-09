@@ -85,6 +85,13 @@ a phase and reported in bulk; a phase that produces errors aborts the pipeline.
 |---|---|---|
 | Lex | Source text | `Token[]` |
 | Parse | `Token[]` | `Module[]` (AST) |
+
+`Token` is a uniform record `(TokenKind Kind, SourceSpan Span, string Text)`. Number
+literals (`IntLit`, `FloatLit`) are stored as raw source text; the parser converts
+them to numeric values. This keeps `Token` flat — no variant payload, no nullable
+value fields — at the cost of moving conversion one phase later. The conversion is a
+small, self-contained helper and the error (overflow, bad digit) fits naturally with
+other parse diagnostics.
 | Resolve | `Module[]` | `Module[]` (names bound) |
 | Type-check | `Module[]` (names bound) | `TypeContext` |
 | Codegen | `Module[]` + `TypeContext` | `CodeUnit` |
@@ -152,6 +159,13 @@ requires `[noreturn]`, etc.).
 
 Stack-based x86 for v1: every sub-expression pushes its result onto the stack;
 operators pop and push. No register allocator. Correct; not fast.
+
+No intermediate assembly representation. Codegen writes x86 bytes directly via
+helpers in `X86.cs`. Forward jumps (if/else, loops) use backpatching: emit a
+placeholder `jz`/`jmp rel32`, record the displacement field's offset, then write
+the real delta once the target offset is known. An assembly IR would only pay off
+for multiple backends, a register allocator, or peephole optimisation — none of
+which are in scope for v1.
 
 Codegen walks the typed AST, consulting `TypeContext` for types, and emits bytes
 into a `CodeUnit` (list of named sections with relocation records).
