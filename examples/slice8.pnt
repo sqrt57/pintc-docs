@@ -1,0 +1,38 @@
+module main {
+
+    [dll_import(dll="kernel32.dll", entry_point="ExitProcess")]
+    [noreturn]
+    extern fun exit_process(code: u32) -> ();
+
+    [win32_entry]
+    [noreturn]
+    fun main() -> () {
+        // element assignment and read with constant indices
+        var a: [3]u32;
+        a[0] = 10;
+        a[1] = 20;
+        a[2] = 30;
+        if (a[0] != 10) { exit_process(1); }
+        if (a[1] != 20) { exit_process(2); }
+        if (a[2] != 30) { exit_process(3); }
+
+        // sum via for loop (variable index read)
+        var sum: u32 = 0;
+        for (var i: u32 = 0; i < 3; i = i + 1) {
+            sum = sum + a[i];
+        }
+        if (sum != 60) { exit_process(4); }
+
+        // fill with squares via for loop (variable index write)
+        var b: [4]u32;
+        for (var i: u32 = 0; i < 4; i = i + 1) {
+            b[i] = i * i;
+        }
+        if (b[0] != 0) { exit_process(5); }
+        if (b[1] != 1) { exit_process(6); }
+        if (b[2] != 4) { exit_process(7); }
+        if (b[3] != 9) { exit_process(8); }
+
+        exit_process(0);
+    }
+}
