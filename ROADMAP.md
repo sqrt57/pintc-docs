@@ -166,19 +166,9 @@ E2e: [slice11.pnt](examples/slice11.pnt) (import/export, single file),
 
 ### Slice 12 — Local constants ✓
 
-`const` at function scope. `LocalConstDecl` AST node; `ParseLocalConstDecl`; `Consts` dict in `FunCtx` — no stack slot, inlined at use sites via `EmitExpr`.
-161 tests passing (140 unit, 4 integration, 17 e2e).
+`const` at function scope. `LocalConstDecl` AST node; `ParseLocalConstDecl`; `Consts` dict in `FunCtx` — literal inits inlined at use sites; non-literal inits allocated a stack slot and evaluated once at the declaration site.
+162 tests passing (140 unit, 4 integration, 18 e2e).
 E2e: [slice12.pnt](examples/slice12.pnt).
-
-#### Known bugs / gaps (Slice 12)
-
-- **Non-compile-time const initializers evaluated at every use site.** The current
-  implementation stores the init `Expr` in a dict and re-emits it wherever the name
-  appears. For literal inits this is harmless, but for a call or any non-literal
-  expression the init is re-executed once per reference instead of once at the
-  declaration point. Fix: detect whether the init is a compile-time constant (literal
-  or const-expression); if not, allocate a stack slot and store the result once, then
-  load from the slot at each use — same as `var` but without allowing reassignment.
 
 ### Slice 13 — Module constants
 

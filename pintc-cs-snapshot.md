@@ -1,6 +1,6 @@
 # pintc-cs — Implementation Snapshot
 
-**As of Slice 12 (2026-06-09). 161 tests passing (140 unit, 4 integration, 17 e2e).**
+**As of Slice 12 (2026-06-10). 162 tests passing (140 unit, 4 integration, 18 e2e).**
 
 This is a "what's actually built" reference, distinct from `pintc-cs-impl.md` (design
 intent). Read this file at the start of any coding session to orient quickly without
@@ -378,7 +378,7 @@ Each e2e test class implements `IDisposable` with a temp directory.
 
 ---
 
-## Known limitations / open gaps (post Slice 11)
+## Known limitations / open gaps (post Slice 12)
 
 - `ident.ident(...)` as a **statement** is unhandled (only works in expression position).
 - Resolver only checks top-level `CallStmt` callees — not nested blocks, not `CallExpr`.
