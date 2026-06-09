@@ -1,0 +1,70 @@
+module main {
+
+    [dll_import(dll="kernel32.dll", entry_point="ExitProcess")]
+    [noreturn]
+    extern fun exit_process(code: u32) -> ();
+
+    record Point {
+        x: u32;
+        y: u32;
+    }
+
+    record Rect {
+        left:   u32;
+        top:    u32;
+        right:  u32;
+        bottom: u32;
+    }
+
+    record Line {
+        start: Point;
+        end:   Point;
+    }
+
+    [win32_entry]
+    [noreturn]
+    fun main() -> () {
+        // field assignment and read
+        var p: Point;
+        p.x = 10;
+        p.y = 20;
+        if (p.x != 10) { exit_process(1); }
+        if (p.y != 20) { exit_process(2); }
+
+        // field in arithmetic expression
+        var sum: u32 = p.x + p.y;
+        if (sum != 30) { exit_process(3); }
+
+        // two locals of same record type: fields are independent
+        var a: Point;
+        var b: Point;
+        a.x = 1;
+        b.x = 2;
+        if (a.x != 1) { exit_process(4); }
+        if (b.x != 2) { exit_process(5); }
+
+        // four-field record
+        var r: Rect;
+        r.left   = 0;
+        r.top    = 5;
+        r.right  = 100;
+        r.bottom = 200;
+        var width:  u32 = r.right - r.left;
+        var height: u32 = r.bottom - r.top;
+        if (width  != 100) { exit_process(6); }
+        if (height != 195) { exit_process(7); }
+
+        // nested record: Line contains two Points
+        var ln: Line;
+        ln.start.x = 3;
+        ln.start.y = 4;
+        ln.end.x   = 9;
+        ln.end.y   = 12;
+        var dx: u32 = ln.end.x - ln.start.x;
+        var dy: u32 = ln.end.y - ln.start.y;
+        if (dx != 6) { exit_process(8); }
+        if (dy != 8) { exit_process(9); }
+
+        exit_process(0);
+    }
+}
