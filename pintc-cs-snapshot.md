@@ -6,6 +6,11 @@ This is a "what's actually built" reference, distinct from `pintc-cs-impl.md` (d
 intent). Read this file at the start of any coding session to orient quickly without
 re-reading the source.
 
+**Maintenance rule:** after any slice or significant source change, update this file
+to match and commit it alongside the source changes (or in a follow-up commit in
+`pintc-docs`). Keep the header line, test counts, and "Known limitations" section
+current. Stale snapshots are worse than no snapshot.
+
 ---
 
 ## Solution layout
