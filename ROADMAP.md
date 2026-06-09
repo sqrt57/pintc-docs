@@ -136,9 +136,10 @@ Unary operators: `-`, `~`, `not`. Bool literals (`true`, `false`). Full operator
 Array types (`[N]T`), index expressions (`a[i]`), element assignment (`a[i] = v`).
 153 tests passing (138 unit, 4 integration, 11 e2e).
 
-### Slice 9 — Records
+### Slice 9 — Records ✓
 
-Record declarations, field access (`.`).
+Record declarations, field access (`.`), nested records.
+154 tests passing (138 unit, 4 integration, 12 e2e).
 
 ### Slice 10 — Pointers
 

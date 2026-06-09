@@ -4,6 +4,16 @@ Tracks language spec versions and compiler releases.
 
 ## Compiler
 
+#### Slice 9 — Records
+
+- `record Name { field: Type; ... }` declarations at module scope
+- Local variables of record type; stack frame allocates the sum of all field sizes
+- Field assignment: `r.field = expr;`
+- Field read: `r.field` as an expression; works in conditions, initialisers, and arithmetic
+- Nested records: `r.inner.field` resolves field paths of arbitrary depth; byte offset is the sum of preceding fields' sizes at each level
+- Codegen: frame-relative addressing `[ebp + localOffset + fieldByteOffset]` for both reads and writes
+- 154 tests (138 unit, 4 integration, 12 e2e)
+
 #### Slice 8 — Arrays
 
 - `[N]T` array types; stack frame allocates N × 4 bytes per array variable
