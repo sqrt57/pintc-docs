@@ -126,9 +126,10 @@ Unary operators: `-`, `~`, `not`. Bool literals (`true`, `false`). Full operator
 `while`, `loop`, `break`, `continue`. Local variable assignment (`name = expr`).
 151 tests passing (138 unit, 4 integration, 9 e2e).
 
-### Slice 7 — for
+### Slice 7 — for ✓
 
 `for` statements.
+152 tests passing (138 unit, 4 integration, 10 e2e).
 
 ### Slice 8 — Arrays
 

@@ -4,6 +4,14 @@ Tracks language spec versions and compiler releases.
 
 ## Compiler
 
+#### Slice 7 — for
+
+- `for (var i: T = init; cond; post = expr) { }` loop; loop variable scoped to the loop block
+- `break` and `continue` work inside `for`; `continue` executes the post-step before rechecking the condition (unlike `while` where it jumps straight to the condition)
+- Nested `for` loops; `break`/`continue` target the innermost enclosing loop
+- Codegen: init emit → condition check (`jz rel32` exit) → body → post-step → back-edge `jmp rel32`; continue patches land at post-step
+- 152 tests (138 unit, 4 integration, 10 e2e)
+
 #### Slice 6 — while, loop, break, continue
 
 - `while (cond) { }` loop with condition re-evaluated each iteration
