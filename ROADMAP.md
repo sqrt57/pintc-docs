@@ -170,6 +170,16 @@ E2e: [slice11.pnt](examples/slice11.pnt) (import/export, single file),
 161 tests passing (140 unit, 4 integration, 17 e2e).
 E2e: [slice12.pnt](examples/slice12.pnt).
 
+#### Known bugs / gaps (Slice 12)
+
+- **Non-compile-time const initializers evaluated at every use site.** The current
+  implementation stores the init `Expr` in a dict and re-emits it wherever the name
+  appears. For literal inits this is harmless, but for a call or any non-literal
+  expression the init is re-executed once per reference instead of once at the
+  declaration point. Fix: detect whether the init is a compile-time constant (literal
+  or const-expression); if not, allocate a stack slot and store the result once, then
+  load from the slot at each use — same as `var` but without allowing reassignment.
+
 ### Slice 13 — Module constants
 
 `const` at module scope; compile-time expression evaluation.
