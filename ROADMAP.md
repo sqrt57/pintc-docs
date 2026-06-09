@@ -131,9 +131,10 @@ Unary operators: `-`, `~`, `not`. Bool literals (`true`, `false`). Full operator
 `for` statements.
 152 tests passing (138 unit, 4 integration, 10 e2e).
 
-### Slice 8 — Arrays
+### Slice 8 — Arrays ✓
 
 Array types (`[N]T`), index expressions (`a[i]`), element assignment (`a[i] = v`).
+153 tests passing (138 unit, 4 integration, 11 e2e).
 
 ### Slice 9 — Records
 

@@ -4,6 +4,14 @@ Tracks language spec versions and compiler releases.
 
 ## Compiler
 
+#### Slice 8 — Arrays
+
+- `[N]T` array types; stack frame allocates N × 4 bytes per array variable
+- Index read: `a[i]` as an expression; SIB addressing `[ebp + ecx*4 + disp8]`
+- Index assignment: `a[i] = v;` statement; same SIB encoding for the store
+- Constant and variable indices both work; no bounds checking (out-of-bounds is undefined behavior)
+- 153 tests (138 unit, 4 integration, 11 e2e)
+
 #### Slice 7 — for
 
 - `for (var i: T = init; cond; post = expr) { }` loop; loop variable scoped to the loop block
