@@ -156,12 +156,12 @@ Pointer types (`^T`), address-of (`@`), dereference (`p^`), arrow (`->`), pointe
 155 tests passing (138 unit, 4 integration, 13 e2e).
 E2e: [slice10-pointers.pnt](examples/slice10-pointers.pnt).
 
-### Slice 11 — Modules
+### Slice 11 — Modules ✓
 
-`import`/`export`, cross-module name resolution, multi-file compilation, DLL output (`.edata`).
-
-E2e target programs: [slice11.pnt](examples/slice11.pnt) (import/export, single file),
-[slice11-multifile-calc.pnt](examples/slice11-multifile-calc.pnt) + [slice11-multifile-main.pnt](examples/slice11-multifile-main.pnt) (multi-file compilation),
+`import`/`export`, cross-module name resolution, multi-file compilation, `return` statement, DLL output (`.edata`).
+158 tests passing (138 unit, 4 integration, 16 e2e).
+E2e: [slice11.pnt](examples/slice11.pnt) (import/export, single file),
+[slice11-multifile-calc.pnt](examples/slice11-multifile-calc.pnt) + [slice11-multifile-main.pnt](examples/slice11-multifile-main.pnt) (multi-file),
 [slice11-dll-lib.pnt](examples/slice11-dll-lib.pnt) + [slice11-dll-main.pnt](examples/slice11-dll-main.pnt) (DLL output and import).
 
 ### Slice 12 — Local constants

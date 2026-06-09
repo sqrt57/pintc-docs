@@ -4,6 +4,20 @@ Tracks language spec versions and compiler releases.
 
 ## Compiler
 
+#### Slice 11 — Modules
+
+- Multiple modules per source file; multiple source files per compilation (`ParseProgram` loops `ParseModule` until EOF; `Program.cs` accumulates all modules across files)
+- `import Mod as Alias;` — makes a module's exported names callable as `Alias.fn(...)` in the current module
+- `export name;` — marks a function as visible to importing modules
+- `return expr;` statement in non-entry functions; frame teardown before `ret`
+- Cross-module `CallExpr`: `Alias.fn(args)` resolved via alias map at codegen; emits `call rel32` with backpatch
+- `[dll_import]` externs in expression position (`var x = f(a, b)`) — `EmitCallExpr` routes these through the IAT instead of `call rel32`
+- `--dll` compiler flag — produces a PE32 DLL instead of an EXE:
+  - `[dll_export]` attribute on functions — exported with stdcall convention (`ret N`)
+  - `.edata` section with `IMAGE_EXPORT_DIRECTORY`; name pointer table sorted for binary search
+  - COFF Characteristics `0x2102` (adds `IMAGE_FILE_DLL`); `AddressOfEntryPoint = 0` (no DllMain)
+- 158 tests (138 unit, 4 integration, 16 e2e)
+
 #### Slice 10 — Pointers
 
 - `^T` pointer types; all pointers are 4 bytes (one stack slot) on IA-32
