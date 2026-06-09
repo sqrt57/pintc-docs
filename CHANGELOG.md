@@ -4,6 +4,15 @@ Tracks language spec versions and compiler releases.
 
 ## Compiler
 
+#### Slice 6 — while, loop, break, continue
+
+- `while (cond) { }` loop with condition re-evaluated each iteration
+- `loop { }` infinite loop
+- `break` and `continue` inside both loop forms; correct backpatching through nested `if`/`else`
+- Local variable assignment: `name = expr;`
+- Codegen: loop-top label + `jz rel32` exit (while) / unconditional back-edge `jmp rel32`; break/continue patch lists propagated through if/else
+- 151 tests (138 unit, 4 integration, 9 e2e)
+
 #### Slice 5 — if/else
 
 - `if (cond) { }` and `if (cond) { } else { }` statements

@@ -121,9 +121,10 @@ Unary operators: `-`, `~`, `not`. Bool literals (`true`, `false`). Full operator
 `if`/`else` statements; `else if` chains; nested blocks.
 143 tests passing (131 unit, 4 integration, 8 e2e).
 
-### Slice 6 — while, loop, break, continue
+### Slice 6 — while, loop, break, continue ✓
 
-`while`, `loop`, `break`, `continue`.
+`while`, `loop`, `break`, `continue`. Local variable assignment (`name = expr`).
+151 tests passing (138 unit, 4 integration, 9 e2e).
 
 ### Slice 7 — for
 
