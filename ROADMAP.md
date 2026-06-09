@@ -141,9 +141,10 @@ Array types (`[N]T`), index expressions (`a[i]`), element assignment (`a[i] = v`
 Record declarations, field access (`.`), nested records.
 154 tests passing (138 unit, 4 integration, 12 e2e).
 
-### Slice 10 — Pointers
+### Slice 10 — Pointers ✓
 
 Pointer types (`^T`), address-of (`@`), dereference (`p^`), arrow (`->`), pointer arithmetic.
+155 tests passing (138 unit, 4 integration, 13 e2e).
 
 ### Slice 11 — Modules
 

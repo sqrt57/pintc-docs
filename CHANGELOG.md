@@ -4,6 +4,17 @@ Tracks language spec versions and compiler releases.
 
 ## Compiler
 
+#### Slice 10 — Pointers
+
+- `^T` pointer types; all pointers are 4 bytes (one stack slot) on IA-32
+- Address-of: `@var`, `@arr`, `@arr[i]`, `@rec.field` — pushes the stack address via `LEA eax, [ebp+disp8]`
+- Dereference read: `p^` as an expression — loads `[eax]` after popping the pointer into EAX
+- Dereference write: `p^ = expr;` statement — pops pointer into ECX, value into EAX, stores via `MOV [ecx], eax`
+- Arrow read: `p->field` as an expression — loads `[eax + fieldByteOffset]`
+- Arrow write: `p->field = expr;` statement — stores via `MOV [ecx + fieldByteOffset], eax`
+- Pointer arithmetic: `p + n` / `p - n` where `p` is a pointer — scales `n` by `sizeof(T)` using `IMUL ecx, ecx, stride` before adding; stride determined from the declared pointer type at codegen time
+- 155 tests (138 unit, 4 integration, 13 e2e)
+
 #### Slice 9 — Records
 
 - `record Name { field: Type; ... }` declarations at module scope

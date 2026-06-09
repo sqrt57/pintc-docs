@@ -1,0 +1,59 @@
+module main {
+
+    [dll_import(dll="kernel32.dll", entry_point="ExitProcess")]
+    [noreturn]
+    extern fun exit_process(code: u32) -> ();
+
+    record Point {
+        x: u32;
+        y: u32;
+    }
+
+    [win32_entry]
+    [noreturn]
+    fun main() -> () {
+        // address-of scalar, dereference read
+        var x: u32 = 42;
+        var p: ^u32 = @x;
+        if (p^ != 42) { exit_process(1); }
+
+        // write through pointer: alias update visible via original variable
+        p^ = 99;
+        if (x != 99) { exit_process(2); }
+
+        // pointer to record, arrow read
+        var pt: Point;
+        pt.x = 10;
+        pt.y = 20;
+        var pp: ^Point = @pt;
+        if (pp->x != 10) { exit_process(3); }
+        if (pp->y != 20) { exit_process(4); }
+
+        // arrow write: update through pointer visible via original record
+        pp->x = 55;
+        if (pt.x != 55) { exit_process(5); }
+
+        // pointer arithmetic: read elements via advancing pointer
+        var arr: [3]u32;
+        arr[0] = 11;
+        arr[1] = 22;
+        arr[2] = 33;
+        var pa: ^u32 = @arr;
+        if (pa^ != 11) { exit_process(6); }
+        var pb: ^u32 = pa + 1;
+        if (pb^ != 22) { exit_process(7); }
+        var pc: ^u32 = pa + 2;
+        if (pc^ != 33) { exit_process(8); }
+
+        // pointer arithmetic: write through advanced pointer
+        var buf: [2]u32;
+        var pw: ^u32 = @buf;
+        pw^ = 5;
+        var qw: ^u32 = pw + 1;
+        qw^ = 10;
+        if (buf[0] != 5)  { exit_process(9); }
+        if (buf[1] != 10) { exit_process(10); }
+
+        exit_process(0);
+    }
+}
