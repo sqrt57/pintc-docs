@@ -1,6 +1,6 @@
 # pintc-cs — Implementation Snapshot
 
-**As of Slice 11 (2026-06-09). 158 tests passing (138 unit, 4 integration, 16 e2e).**
+**As of Slice 12 (2026-06-09). 161 tests passing (140 unit, 4 integration, 17 e2e).**
 
 This is a "what's actually built" reference, distinct from `pintc-cs-impl.md` (design
 intent). Read this file at the start of any coding session to orient quickly without
@@ -73,7 +73,7 @@ All AST nodes are C# `record`s. No `SourceSpan` on nodes yet (planned).
 
 ### Statements (abstract base: `Stmt`)
 
-`CallStmt`, `ReturnStmt`, `LocalVarDecl`, `AssignStmt`, `IndexAssignStmt`,
+`CallStmt`, `ReturnStmt`, `LocalVarDecl`, `LocalConstDecl`, `AssignStmt`, `IndexAssignStmt`,
 `FieldAssignStmt`, `DerefAssignStmt`, `ArrowAssignStmt`, `IfStmt`, `WhileStmt`,
 `LoopStmt`, `BreakStmt`, `ContinueStmt`, `ForStmt`
 
@@ -145,6 +145,7 @@ Lookahead determines which parser is called:
 
 - `return` → `ParseReturnStmt`
 - `var` → `ParseLocalVarDecl`
+- `const` → `ParseLocalConstDecl`
 - `if` / `for` / `while` / `loop` / `break` / `continue` → respective parsers
 - `ident . ident =` → `ParseFieldAssignStmt`
 - `ident =` → `ParseAssignStmt`
@@ -223,7 +224,8 @@ record FunCtx(
     int                                 LocalBytes,
     bool                                NeedsFrame,
     bool                                IsStdcall,     // true for [dll_export] functions
-    int                                 ParamStackBytes); // N for ret N (stdcall)
+    int                                 ParamStackBytes, // N for ret N (stdcall)
+    Dictionary<string, Expr>            Consts);       // local constants: name → init expr
 ```
 
 ### `Emit(List<ModuleDecl>, isDll)` flow

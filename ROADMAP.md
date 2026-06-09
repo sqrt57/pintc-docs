@@ -164,9 +164,11 @@ E2e: [slice11.pnt](examples/slice11.pnt) (import/export, single file),
 [slice11-multifile-calc.pnt](examples/slice11-multifile-calc.pnt) + [slice11-multifile-main.pnt](examples/slice11-multifile-main.pnt) (multi-file),
 [slice11-dll-lib.pnt](examples/slice11-dll-lib.pnt) + [slice11-dll-main.pnt](examples/slice11-dll-main.pnt) (DLL output and import).
 
-### Slice 12 — Local constants
+### Slice 12 — Local constants ✓
 
-`const` at function scope.
+`const` at function scope. `LocalConstDecl` AST node; `ParseLocalConstDecl`; `Consts` dict in `FunCtx` — no stack slot, inlined at use sites via `EmitExpr`.
+161 tests passing (140 unit, 4 integration, 17 e2e).
+E2e: [slice12.pnt](examples/slice12.pnt).
 
 ### Slice 13 — Module constants
 

@@ -1,0 +1,43 @@
+module main {
+
+    [dll_import(dll="kernel32.dll", entry_point="ExitProcess")]
+    [noreturn]
+    extern fun exit_process(code: u32) -> ();
+
+    fun get_base() -> u32 {
+        return 3;
+    }
+
+    [win32_entry]
+    [noreturn]
+    fun main() -> () {
+        // const used in an expression
+        const LIMIT: u32 = 10;
+        var x: u32 = LIMIT + 5;
+        if (x != 15) { exit_process(1); }
+
+        // const used in a comparison
+        const THRESH: u32 = 7;
+        var y: u32 = 8;
+        if (y <= THRESH) { exit_process(2); }
+
+        // const bool
+        const OK: bool = true;
+        if (not OK) { exit_process(3); }
+
+        // two consts combined in arithmetic
+        const WIDTH: u32 = 4;
+        const HEIGHT: u32 = 5;
+        var area: u32 = WIDTH * HEIGHT;
+        if (area != 20) { exit_process(4); }
+
+        // const initialized from a function call
+        const BASE: u32 = get_base();
+        var z: u32 = BASE * 2;
+        if (z != 6) { exit_process(5); }
+
+        // const passed directly as a call argument
+        const EXIT_OK: u32 = 0;
+        exit_process(EXIT_OK);
+    }
+}
