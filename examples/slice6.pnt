@@ -1,0 +1,44 @@
+module main {
+
+    [dll_import(dll="kernel32.dll", entry_point="ExitProcess")]
+    [noreturn]
+    extern fun exit_process(code: u32) -> ();
+
+    [win32_entry]
+    [noreturn]
+    fun main() -> () {
+        // while: count up to 3
+        var i: u32 = 0;
+        while (i < 3) {
+            i = i + 1;
+        }
+        if (i != 3) { exit_process(1); }
+
+        // while with false condition: body never executes
+        var j: u32 = 0;
+        while (false) {
+            j = j + 1;
+        }
+        if (j != 0) { exit_process(2); }
+
+        // loop + break
+        var k: u32 = 0;
+        loop {
+            k = k + 1;
+            if (k == 3) { break; }
+        }
+        if (k != 3) { exit_process(3); }
+
+        // continue: accumulate only odd values (1 and 3) out of 1..4
+        var n: u32 = 0;
+        var sum: u32 = 0;
+        while (n < 4) {
+            n = n + 1;
+            if (n % 2 == 0) { continue; }
+            sum = sum + n;
+        }
+        if (sum != 4) { exit_process(4); }
+
+        exit_process(0);
+    }
+}
