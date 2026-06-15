@@ -4,6 +4,19 @@ Tracks language spec versions and compiler releases.
 
 ## Compiler
 
+#### Slice 14 — Strings and char literals
+
+- `'A'` char literals — type `byte`; `DecodeCharLit` handles `\n`, `\t`, `\\`, `\'`, `\0`, and other escapes
+- `"hello"` string literals — decoded as UTF-8 bytes (no null terminator in the `StringLiteralExpr`); `\u{XXXXXX}` Unicode codepoint escapes supported
+- String literals allocated into a `.rdata` PE section (null-terminated); `.ptr` yields the section VA, `.len` yields the byte count — both emitted as compile-time immediates
+- `const s: string = "hello";` at function scope: `StringConstExpr` recorded in `FunCtx.Consts`; `s.ptr` / `s.len` field access paths resolved at codegen
+- Module-scope string consts: `EvalConstExpr` allocates bytes into `rdataBytes` and returns a `StringConstExpr`
+- `^byte` dereference: `mov al,[eax]; movzx eax,al` instead of `mov eax,[eax]` — necessary for byte-sized string indexing (`p^`)
+- Pointer arithmetic uses `Stride()` (actual memory width: 1 for `byte/u8/i8/bool`, 2 for `u16/i16`, 4 otherwise) instead of `StackSlotSize()` (always 4); `GetExprType` extended to propagate type through `Add`/`Sub`
+- `.rdata` section at RVA 0x2000; `.data` shifts to 0x3000 when rdata is present; `dataRva` computed dynamically at codegen and matched in PeWriter
+- `X86.MovAlMemEax()` — new helper: `8A 00`
+- 167 tests (140 unit, 4 integration, 23 e2e)
+
 #### Slice 13 — Module constants
 
 - `const NAME: T = expr;` at module scope

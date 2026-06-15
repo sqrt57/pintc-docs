@@ -176,9 +176,11 @@ E2e: [slice12.pnt](examples/slice12.pnt).
 163 tests passing (140 unit, 4 integration, 19 e2e).
 E2e: [slice13.pnt](examples/slice13.pnt).
 
-### Slice 14 — Strings and char literals
+### Slice 14 — Strings and char literals ✓
 
-String literals (`.rdata`), `string` type (`.ptr`, `.len`), char literals (`byte`).
+String literals (`.rdata`), `string` type (`.ptr`, `.len`), char literals (`byte`), `^byte` dereference, `Stride()` for pointer arithmetic.
+167 tests passing (140 unit, 4 integration, 23 e2e).
+E2e: [slice14.pnt](examples/slice14.pnt).
 
 ### Slice 15 — Multiple return values
 
