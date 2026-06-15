@@ -4,6 +4,22 @@ Tracks language spec versions and compiler releases.
 
 ## Compiler
 
+#### Slice 13 — Module constants
+
+- `const NAME: T = expr;` at module scope
+- Compile-time expression evaluator: literals, const-of-consts, unary (`-`, `~`, `not`), binary arithmetic/bitwise/comparison — all evaluated to a literal at compile time
+- Forward references work; evaluation is memoized to handle out-of-order declarations
+- Evaluated values seeded into `FunCtx.Consts` at function emit time; uses inside functions inline the literal (same mechanism as local literal consts from Slice 12)
+- Local const names shadow module const names within a function body
+- 163 tests (140 unit, 4 integration, 19 e2e)
+
+#### Slice 12 — Local constants
+
+- `const NAME: T = expr;` declarations inside function bodies
+- Literal initializers (`true`, `false`, integer literals) inlined at every use site — no stack allocation
+- Non-literal initializers (calls, expressions with side effects) allocated a stack slot and evaluated once at the declaration site; subsequent uses read the slot
+- 162 tests (140 unit, 4 integration, 18 e2e)
+
 #### Slice 11 — Modules
 
 - Multiple modules per source file; multiple source files per compilation (`ParseProgram` loops `ParseModule` until EOF; `Program.cs` accumulates all modules across files)

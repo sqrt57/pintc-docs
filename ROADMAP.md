@@ -170,9 +170,11 @@ E2e: [slice11.pnt](examples/slice11.pnt) (import/export, single file),
 162 tests passing (140 unit, 4 integration, 18 e2e).
 E2e: [slice12.pnt](examples/slice12.pnt).
 
-### Slice 13 — Module constants
+### Slice 13 — Module constants ✓
 
-`const` at module scope; compile-time expression evaluation.
+`const NAME: T = expr;` at module scope; compile-time expression evaluation. `ModuleConstDecl` AST node; `ParseModuleConstDecl`; `BuildModuleConstMap` evaluates all initializers to literals (supports literals, const-of-consts, arithmetic, unary ops); evaluated map seeded into `FunCtx.Consts` so uses inside functions inline the value. Forward references work via recursive resolver with memoization.
+163 tests passing (140 unit, 4 integration, 19 e2e).
+E2e: [slice13.pnt](examples/slice13.pnt).
 
 ### Slice 14 — Strings and char literals
 
