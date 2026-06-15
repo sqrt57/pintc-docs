@@ -1,12 +1,12 @@
 # pintc-cs — Implementation Snapshot
 
-**As of Slice 13 (2026-06-14). 163 tests passing (140 unit, 4 integration, 19 e2e).**
+**As of Slice 14 (2026-06-15). 167 tests passing (140 unit, 4 integration, 23 e2e).**
 
 ---
 
 ## TL;DR
 
-- **Slices complete:** 1–13. Next: Slice 14 — Strings and char literals.
+- **Slices complete:** 1–14. Next: Slice 15.
 - **Pipeline:** Lex → Parse → Resolve → TypeCheck → Codegen → PE emit. All phases wired end-to-end.
 - **Output:** PE32 EXE or DLL written directly — no assembler/linker dependency.
 - **Codegen:** stack-based x86, no register allocator. All values go through the stack (`push`/`pop`). EAX = expression result; ECX = right operand or scratch.
@@ -18,7 +18,7 @@
 
 ---
 
-## Known gaps (post Slice 13)
+## Known gaps (post Slice 14)
 
 - `ident.ident(...)` as a **statement** is unhandled — only works in expression position.
 - Resolver only checks top-level `CallStmt` callees — not nested blocks, not `CallExpr`.
@@ -97,8 +97,12 @@ All nodes are C# `record`s. No `SourceSpan` yet.
 | `AddressOfExpr` | `Expr Operand` |
 | `DerefExpr` | `Expr Ptr` |
 | `ArrowExpr` | `Expr Ptr, string Field` |
+| `CharLiteralExpr` | `byte Value` |
+| `StringLiteralExpr` | `byte[] Bytes` |
+| `StringConstExpr` | `uint RdataOffset, int ByteCount` |
 
 `CallExpr.Qualifier` non-null for qualified calls (`C.add(...)` → Qualifier=`"C"`).
+`StringConstExpr` is an internal node produced by const-eval when a `StringLiteralExpr` is allocated into `.rdata`; never appears in the parsed AST.
 
 ### Statements (`abstract record Stmt`)
 
@@ -221,9 +225,17 @@ Check(List<ModuleDecl>, ResolveResult) → IReadOnlyList<Diagnostic>
 | `CallExpr` in importMap | stdcall | callee | `call [IAT]` indirect |
 | `CallExpr` local Pint fn | cdecl | caller `add esp,N` | `call rel32` + backpatch |
 
+### String and char literals (Slice 14)
+
+- `CharLiteralExpr(byte)` → `push imm8`.
+- `StringLiteralExpr(byte[])` allocated into `.rdata` (null-terminated) → `StringConstExpr(rdataOffset, byteCount)`.
+- `const s: string = "hello"` → `s.ptr` pushes `ImageBase + RdataRva + offset`; `s.len` pushes byte count.
+- Pointer arithmetic uses `Stride()` (actual byte width: 1 for `byte/u8/i8/bool`, 2 for `u16/i16`, 4 for everything else) instead of `StackSlotSize()` (always 4).
+- Deref of `^byte` emits `mov al,[eax]; movzx eax,al` instead of `mov eax,[eax]`.
+
 ### Stack slot sizes
 
-Scalars/pointers: 4 bytes. Arrays `[N]T`: N × slot(T). Records: sum of fields (recursive). Implemented by `StackSlotSize(type, recordMap)`.
+Scalars/pointers: 4 bytes on the stack. Arrays `[N]T`: N × slot(T). Records: sum of fields (recursive). Implemented by `StackSlotSize(type, recordMap)`. For pointer arithmetic and `^byte` dereference, `Stride(type, recordMap)` returns the actual memory width (1, 2, or 4).
 
 ---
 
@@ -235,6 +247,7 @@ class CodeUnit {
     List<IatRef>      IatRefs;      // patched to absolute IAT VAs by PeWriter
     List<ImportSpec>  Imports;
     byte[]            Data;         // .data section; empty = no .data section
+    byte[]            ReadOnly;     // .rdata section (string literals); empty = no section
     List<ExportedFun> ExportedFuns; // DLL exports; empty for EXE
 }
 ```
@@ -245,7 +258,7 @@ class CodeUnit {
 
 Fixed layout, no relocations. `ImageBase = 0x00400000`, `TextRva = 0x1000`.
 
-EXE: sections `.text`, `.data` (optional), `.idata`. Entry point = `TextRva` (code offset 0).
+EXE: sections `.text`, `.rdata` (optional, RVA 0x2000), `.data` (optional, RVA 0x2000 or 0x3000), `.idata`. Entry point = `TextRva` (code offset 0). `.rdata` shift: when string literals exist, `.data` moves to 0x3000 and `.idata` to 0x4000; `Codegen` computes the dynamic `dataRva` to match.
 
 DLL: sections `.text`, `.edata`, `.data` (optional), `.idata` (optional). `AddressOfEntryPoint = 0`. Export name pointer table sorted alphabetically (PE binary-search requirement).
 
@@ -253,7 +266,7 @@ DLL: sections `.text`, `.edata`, `.data` (optional), `.idata` (optional). `Addre
 
 ## X86 helpers (`Pintc/X86.cs`)
 
-See source for the full list. Non-obvious constants: `CallIndirectMemAddressOffset = 2` (byte offset within the `FF 15` encoding where the VA is written), `CallRel32DispAt = 1` (byte offset within `E8` encoding for the rel32 displacement). Used by `EmitCallExpr` and `EmitCallStmt` when recording `IatRef`/`LocalCallRef` patch sites.
+See source for the full list. Non-obvious constants: `CallIndirectMemAddressOffset = 2` (byte offset within the `FF 15` encoding where the VA is written), `CallRel32DispAt = 1` (byte offset within `E8` encoding for the rel32 displacement). Used by `EmitCallExpr` and `EmitCallStmt` when recording `IatRef`/`LocalCallRef` patch sites. `MovAlMemEax` (`8A 00`) loads a single byte from `[eax]` into `al`; used with `MovzxEaxAl` for `^byte` dereference.
 
 ---
 
