@@ -1,0 +1,29 @@
+module main {
+
+    [dll_import(dll="kernel32.dll", entry_point="ExitProcess")]
+    [noreturn]
+    extern fun exit_process(code: u32) -> ();
+
+    fun minmax(a: u32, b: u32) -> (u32, u32) {
+        if (a < b) {
+            return a, b;
+        }
+        return b, a;
+    }
+
+    [win32_entry]
+    [noreturn]
+    fun main() -> () {
+        var lo: u32;
+        var hi: u32;
+        (lo, hi) = minmax(7, 3);
+        if (lo != 3) { exit_process(1); }
+        if (hi != 7) { exit_process(2); }
+
+        (lo, hi) = minmax(2, 9);
+        if (lo != 2) { exit_process(3); }
+        if (hi != 9) { exit_process(4); }
+
+        exit_process(0);
+    }
+}

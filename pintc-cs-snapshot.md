@@ -1,12 +1,12 @@
 # pintc-cs — Implementation Snapshot
 
-**As of Slice 14 (2026-06-15). 167 tests passing (140 unit, 4 integration, 23 e2e).**
+**As of Slice 15 (2026-06-15). 170 tests passing (140 unit, 4 integration, 26 e2e).**
 
 ---
 
 ## TL;DR
 
-- **Slices complete:** 1–14. Next: Slice 15.
+- **Slices complete:** 1–15. Next: Slice 16.
 - **Pipeline:** Lex → Parse → Resolve → TypeCheck → Codegen → PE emit. All phases wired end-to-end.
 - **Output:** PE32 EXE or DLL written directly — no assembler/linker dependency.
 - **Codegen:** stack-based x86, no register allocator. All values go through the stack (`push`/`pop`). EAX = expression result; ECX = right operand or scratch.
@@ -15,10 +15,11 @@
   - EBP offsets are `sbyte` — locals limited to ~127 bytes, params to ~31.
   - Resolver and TypeChecker are intentionally narrow: they only check **top-level `CallStmt`** in function bodies. Nested blocks, `CallExpr`, and `return` types are not checked.
   - `FunCtx.Consts` is pre-seeded with evaluated module consts; local `const` decls add/shadow entries as statements execute.
+  - Multi-return functions use a **hidden pointer** convention: caller allocates the return buffer, pushes the buffer address last (callee sees it at `[EBP+8]`), and user params shift right to `[EBP+12]`, `[EBP+16]`, etc.
 
 ---
 
-## Known gaps (post Slice 14)
+## Known gaps (post Slice 15)
 
 - `ident.ident(...)` as a **statement** is unhandled — only works in expression position.
 - Resolver only checks top-level `CallStmt` callees — not nested blocks, not `CallExpr`.
@@ -28,6 +29,9 @@
 - No type AST — types are plain strings throughout.
 - No `SourceSpan` on AST nodes — error messages lack line/column.
 - `CollectLocals` allocates one slot per name; sibling for-loop vars with the same name share the slot (harmless today).
+- `AddEspImm8`/`SubEspImm8` use `imm8` — max 127 bytes; breaks with > 31 return values or args.
+- Named multi-return unpack (`(file: f, err: e) = g()`) not implemented (Slice 18).
+- Multi-return calls as expressions (not in `MultiVarDecl`/`MultiAssignStmt`) not supported.
 
 ---
 
@@ -108,9 +112,12 @@ All nodes are C# `record`s. No `SourceSpan` yet.
 
 `CallStmt`, `ReturnStmt`, `LocalVarDecl`, `LocalConstDecl`, `AssignStmt`, `IndexAssignStmt`,
 `FieldAssignStmt`, `DerefAssignStmt`, `ArrowAssignStmt`, `IfStmt`, `WhileStmt`,
-`LoopStmt`, `BreakStmt`, `ContinueStmt`, `ForStmt`
+`LoopStmt`, `BreakStmt`, `ContinueStmt`, `ForStmt`, `MultiVarDecl`, `MultiAssignStmt`
 
 `ForStmt` carries: VarName, VarTypeName, VarInit, Condition, PostName, PostValue, Body.
+`ReturnStmt` carries: `List<Expr> Values` (single-element for single return; multi-element for tuple return).
+`MultiVarDecl` carries: `List<(string? Name, string? TypeName)> Items, CallExpr Call` — `null` Name = discard.
+`MultiAssignStmt` carries: `List<string?> Names, CallExpr Call` — `null` = discard.
 
 ### Module-level declarations
 
@@ -164,7 +171,7 @@ Hand-written recursive descent.
 
 ### `ParseStmt` dispatch
 
-`return` → `ParseReturnStmt` | `var` → `ParseLocalVarDecl` | `const` → `ParseLocalConstDecl` | `if/for/while/loop/break/continue` → respective | `ident . ident =` → `ParseFieldAssignStmt` | `ident =` → `ParseAssignStmt` | `ident [` → `ParseIndexAssignStmt` | `ident ^` → `ParseDerefAssignStmt` | `ident ->` → `ParseArrowAssignStmt` | fallthrough → `ParseCallStmt`
+`return` → `ParseReturnStmt` | `var (` → `ParseMultiVarDecl` | `var` → `ParseLocalVarDecl` | `const` → `ParseLocalConstDecl` | `if/for/while/loop/break/continue` → respective | `(` → `ParseMultiAssignStmt` | `ident . ident =` → `ParseFieldAssignStmt` | `ident =` → `ParseAssignStmt` | `ident [` → `ParseIndexAssignStmt` | `ident ^` → `ParseDerefAssignStmt` | `ident ->` → `ParseArrowAssignStmt` | fallthrough → `ParseCallStmt`
 
 **Known gap:** `ident.ident(...)` as a statement is not handled.
 
@@ -224,6 +231,15 @@ Check(List<ModuleDecl>, ResolveResult) → IReadOnlyList<Diagnostic>
 | `CallStmt` extern | stdcall | callee `ret N` | `call [IAT]` indirect |
 | `CallExpr` in importMap | stdcall | callee | `call [IAT]` indirect |
 | `CallExpr` local Pint fn | cdecl | caller `add esp,N` | `call rel32` + backpatch |
+| `MultiVarDecl` / `MultiAssignStmt` | cdecl + hidden ptr | caller `add esp,(1+N+1)*4` | `call rel32` + backpatch |
+
+### Multiple return values (Slice 15)
+
+- `fun f(...) -> (T1, T2)` return type parsed as `ParseReturnType`; `ReturnType` stored in `FunCtx`.
+- `EmitFun` detects `IsMultiReturn` and shifts params: hidden ptr is pushed last before `call`, callee sees it at `[EBP+8]`; user params shift to `[EBP+12]`, `[EBP+16]`, etc. Callee writes `[ptr+0]`, `[ptr+4]`, … and returns void.
+- `EmitMultiVarDecl`: pre-allocates return buffer in the caller's frame (`RetBufOffsets[stmt]`); LEA EAX → save → push user args R-L → reload → push as callee arg → CALL → ADD ESP.
+- `EmitMultiAssignStmt`: SUB ESP to allocate a temp buffer → LEA EAX ESP → save → push user args R-L → reload → push as callee arg → CALL → ADD ESP twice → pop each return value into its existing local slot (or ADD ESP 4 for discards).
+- `FunCtx` additions: `string? ReturnType`, `List<string> FunReturnTypes`, `Dictionary<MultiVarDecl, int> RetBufOffsets`.
 
 ### String and char literals (Slice 14)
 
@@ -265,6 +281,8 @@ DLL: sections `.text`, `.edata`, `.data` (optional), `.idata` (optional). `Addre
 ---
 
 ## X86 helpers (`Pintc/X86.cs`)
+
+Slice 15 additions: `LeaEaxEsp` (`8D 04 24`), `MovEcxEbpDisp8` (`8B 4D disp`), `MovEaxEspDisp8` (`8B 44 24 disp`).
 
 See source for the full list. Non-obvious constants: `CallIndirectMemAddressOffset = 2` (byte offset within the `FF 15` encoding where the VA is written), `CallRel32DispAt = 1` (byte offset within `E8` encoding for the rel32 displacement). Used by `EmitCallExpr` and `EmitCallStmt` when recording `IatRef`/`LocalCallRef` patch sites. `MovAlMemEax` (`8A 00`) loads a single byte from `[eax]` into `al`; used with `MovzxEaxAl` for `^byte` dereference.
 

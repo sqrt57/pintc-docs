@@ -182,9 +182,11 @@ String literals (`.rdata`), `string` type (`.ptr`, `.len`), char literals (`byte
 167 tests passing (140 unit, 4 integration, 23 e2e).
 E2e: [slice14.pnt](examples/slice14.pnt).
 
-### Slice 15 — Multiple return values
+### Slice 15 — Multiple return values ✓
 
-Tuple return types, multi-assign statements, hidden pointer calling convention.
+Tuple return types, multi-variable declaration (`var (a: T, b: T) = f()`), multi-assign (`(a, b) = f()`), discard (`_`), hidden pointer calling convention.
+170 tests passing (140 unit, 4 integration, 26 e2e).
+E2e: [slice15.pnt](examples/slice15.pnt), [slice15-multiassign.pnt](examples/slice15-multiassign.pnt).
 
 ### Slice 16 — Builtins
 

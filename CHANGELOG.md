@@ -4,6 +4,16 @@ Tracks language spec versions and compiler releases.
 
 ## Compiler
 
+#### Slice 15 — Multiple return values
+
+- `(T1, T2)` tuple return types; functions return multiple values via a hidden pointer convention
+- `var (a: T1, b: T2) = f(...)` — declares new typed variables bound to all return values; return buffer pre-allocated in the caller's frame
+- `(a, b) = f(...)` — assigns to existing locals; temporary buffer allocated on the stack, values popped into their slots on return
+- `_` discard position in both forms silently skips that return value
+- Calling convention: hidden pointer pushed last before `call` (callee sees it at `[EBP+8]`); user args at `[EBP+12]`, `[EBP+16]`, …; callee writes `[ptr+0]`, `[ptr+4]`, …; all calls are cdecl (caller cleans up)
+- `X86.LeaEaxEsp`, `X86.MovEcxEbpDisp8`, `X86.MovEaxEspDisp8` — new helpers
+- 170 tests (140 unit, 4 integration, 26 e2e)
+
 #### Slice 14 — Strings and char literals
 
 - `'A'` char literals — type `byte`; `DecodeCharLit` handles `\n`, `\t`, `\\`, `\'`, `\0`, and other escapes
