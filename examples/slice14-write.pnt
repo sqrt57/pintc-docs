@@ -1,0 +1,25 @@
+module main {
+
+    [dll_import(dll="kernel32.dll", entry_point="ExitProcess")]
+    [noreturn]
+    extern fun exit_process(code: u32) -> ();
+
+    [dll_import(dll="kernel32.dll", entry_point="GetStdHandle")]
+    extern fun get_std_handle(nStdHandle: u32) -> u32;
+
+    [dll_import(dll="kernel32.dll", entry_point="WriteFile")]
+    extern fun write_file(hFile: u32, lpBuffer: ^byte, nNumberOfBytesToWrite: u32, lpNumberOfBytesWritten: ^u32, lpOverlapped: u32) -> u32;
+
+    // STD_OUTPUT_HANDLE = (DWORD)(-11) = 0xFFFFFFF5
+    const STD_OUTPUT_HANDLE: u32 = 0xFFFFFFF5;
+    const GREETING: string = "Hello, Pint!";
+
+    [win32_entry]
+    [noreturn]
+    fun main() -> () {
+        var handle: u32 = get_std_handle(STD_OUTPUT_HANDLE);
+        var written: u32 = 0;
+        write_file(handle, GREETING.ptr, GREETING.len, @written, 0);
+        exit_process(0);
+    }
+}
