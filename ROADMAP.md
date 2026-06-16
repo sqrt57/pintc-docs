@@ -194,9 +194,11 @@ E2e: [slice15.pnt](examples/slice15.pnt), [slice15-multiassign.pnt](examples/sli
 174 tests passing (140 unit, 4 integration, 30 e2e).
 E2e: [slice16-cast.pnt](examples/slice16-cast.pnt), [slice16-sizeof.pnt](examples/slice16-sizeof.pnt), [slice16-divmod.pnt](examples/slice16-divmod.pnt), [slice16-mul.pnt](examples/slice16-mul.pnt).
 
-### Slice 17 — Named arguments
+### Slice 17 — Named arguments ✓
 
 Named call syntax (`f(a: x, b: y)`); order-independent argument passing.
+175 tests passing (140 unit, 4 integration, 31 e2e).
+E2e: [slice17.pnt](examples/slice17.pnt).
 
 ### Slice 18 — Named return values
 

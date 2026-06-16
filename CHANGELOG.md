@@ -4,6 +4,15 @@ Tracks language spec versions and compiler releases.
 
 ## Compiler
 
+#### Slice 17 — Named arguments
+
+- `f(a: x, b: y)` named call syntax — any argument can be passed by its declared parameter name
+- Order-independent: `f(b: y, a: x)` is identical to `f(a: x, b: y)`; args are reordered to match declared parameter order before emission
+- `CallExpr` gains `List<string?>? ArgNames` (null when all positional); `ReorderArgs` helper in codegen maps names to declared positions via `FunParamLists`
+- Applied across all Pint function call paths: `EmitCallExpr`, `EmitMultiVarDecl`, `EmitMultiAssignStmt`
+- Detection in parser: `ident:` at argument position via one-token lookahead; falls back to positional when no names are present
+- 175 tests (140 unit, 4 integration, 31 e2e)
+
 #### Slice 16 — Builtins
 
 - `cast(expr, T)` — truncates a value to the target type's bit width; `u8` → `AND EAX, 0xFF`, `u16` → `AND EAX, 0xFFFF`, `u32` → no-op

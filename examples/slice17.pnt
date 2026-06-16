@@ -1,0 +1,24 @@
+module main {
+
+    [dll_import(dll="kernel32.dll", entry_point="ExitProcess")]
+    [noreturn]
+    extern fun exit_process(code: u32) -> ();
+
+    fun subtract(minuend: u32, subtrahend: u32) -> u32 {
+        return minuend - subtrahend;
+    }
+
+    [win32_entry]
+    [noreturn]
+    fun main() -> () {
+        // named args in declared order
+        var r1: u32 = subtract(minuend: 10, subtrahend: 3);
+        if (r1 != 7) { exit_process(1); }
+
+        // named args out of declared order — key order-independence check
+        var r2: u32 = subtract(subtrahend: 3, minuend: 10);
+        if (r2 != 7) { exit_process(2); }
+
+        exit_process(0);
+    }
+}
