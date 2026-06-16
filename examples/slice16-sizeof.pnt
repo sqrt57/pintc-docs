@@ -1,0 +1,25 @@
+module main {
+
+    [dll_import(dll="kernel32.dll", entry_point="ExitProcess")]
+    [noreturn]
+    extern fun exit_process(code: u32) -> ();
+
+    [win32_entry]
+    [noreturn]
+    fun main() -> () {
+        var s1: u32 = sizeof(u8);
+        if (s1 != 1) { exit_process(1); }
+
+        var s2: u32 = sizeof(u32);
+        if (s2 != 4) { exit_process(2); }
+
+        var s3: u32 = sizeof([5]u32);
+        if (s3 != 20) { exit_process(3); }
+
+        var arr: [7]u32;
+        var len: u32 = length(arr);
+        if (len != 7) { exit_process(4); }
+
+        exit_process(0);
+    }
+}

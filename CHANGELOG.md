@@ -4,6 +4,19 @@ Tracks language spec versions and compiler releases.
 
 ## Compiler
 
+#### Slice 16 — Builtins
+
+- `cast(expr, T)` — truncates a value to the target type's bit width; `u8` → `AND EAX, 0xFF`, `u16` → `AND EAX, 0xFFFF`, `u32` → no-op
+- `to_u8`, `to_u16`, `to_u32` — unsigned truncation (same masks as `cast`); `to_i8`, `to_i16` → `MOVSX` sign-extension; `to_i32` → no-op
+- `sizeof(T)` — compile-time byte size: `sizeof(u8)` = 1, `sizeof(u32)` = 4, `sizeof([N]T)` = N × stride(T)
+- `length(arr)` — compile-time array length: `length(arr)` where `arr: [N]T` = N
+- `divmod(a, b)` — inline unsigned divide; `XOR EDX,EDX; DIV ECX`; result `(quotient, remainder)` written directly to pre-allocated frame slots; usable in `var (q, r) = divmod(...)` and `(q, r) = divmod(...)`
+- `mul(a, b)` — inline unsigned wide multiply; `MUL ECX`; result `(lo, hi)` from EDX:EAX written directly to frame slots
+- `DivmodExpr`/`MulWideExpr` dispatch added to `EmitMultiVarDecl` and `EmitMultiAssignStmt`; no hidden-pointer protocol needed (results go straight to named slots)
+- New `ByteSize` helper (vs. `StackSlotSize`/`Stride`): returns actual memory byte size; used by `sizeof` codegen
+- New X86 helpers: `AndEaxImm32`, `MovsxEaxAl`, `MovsxEaxAx`, `MulEcx`, `MovEbpDisp8Eax`, `MovEbpDisp8Edx`
+- 174 tests (140 unit, 4 integration, 30 e2e)
+
 #### Slice 15 — Multiple return values
 
 - `(T1, T2)` tuple return types; functions return multiple values via a hidden pointer convention

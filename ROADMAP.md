@@ -192,6 +192,7 @@ E2e: [slice15.pnt](examples/slice15.pnt), [slice15-multiassign.pnt](examples/sli
 
 `cast`, `sizeof`, `divmod`, `mul`, `length`, `to_i8`…`to_u32`.
 174 tests passing (140 unit, 4 integration, 30 e2e).
+E2e: [slice16-cast.pnt](examples/slice16-cast.pnt), [slice16-sizeof.pnt](examples/slice16-sizeof.pnt), [slice16-divmod.pnt](examples/slice16-divmod.pnt), [slice16-mul.pnt](examples/slice16-mul.pnt).
 
 ### Slice 17 — Named arguments
 
