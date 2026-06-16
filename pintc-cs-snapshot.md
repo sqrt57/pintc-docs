@@ -1,12 +1,12 @@
 # pintc-cs — Implementation Snapshot
 
-**As of Slice 16 (2026-06-16). 174 tests passing (140 unit, 4 integration, 30 e2e).**
+**As of Slice 17 (2026-06-16). 175 tests passing (140 unit, 4 integration, 31 e2e).**
 
 ---
 
 ## TL;DR
 
-- **Slices complete:** 1–16. Next: Slice 17.
+- **Slices complete:** 1–17. Next: Slice 18.
 - **Pipeline:** Lex → Parse → Resolve → TypeCheck → Codegen → PE emit. All phases wired end-to-end.
 - **Output:** PE32 EXE or DLL written directly — no assembler/linker dependency.
 - **Codegen:** stack-based x86, no register allocator. All values go through the stack (`push`/`pop`). EAX = expression result; ECX = right operand or scratch.
@@ -93,7 +93,7 @@ All nodes are C# `record`s. No `SourceSpan` yet.
 | `IntLiteralExpr` | `long Value` |
 | `BoolLiteralExpr` | `bool Value` |
 | `VarRefExpr` | `string Name` |
-| `CallExpr` | `string? Qualifier, string Name, List<Expr> Args` |
+| `CallExpr` | `string? Qualifier, string Name, List<Expr> Args, List<string?>? ArgNames` |
 | `BinaryExpr` | `BinaryOp Op, Expr Left, Expr Right` |
 | `UnaryExpr` | `UnaryOp Op, Expr Operand` |
 | `IndexExpr` | `string ArrayName, Expr Idx` |
@@ -112,6 +112,7 @@ All nodes are C# `record`s. No `SourceSpan` yet.
 | `MulWideExpr` | `Expr A, Expr B` |
 
 `CallExpr.Qualifier` non-null for qualified calls (`C.add(...)` → Qualifier=`"C"`).
+`CallExpr.ArgNames` non-null when any argument is named; parallel to `Args` (null entry = positional). 3-arg compat constructor sets `ArgNames = null`.
 `StringConstExpr` is an internal node produced by const-eval when a `StringLiteralExpr` is allocated into `.rdata`; never appears in the parsed AST.
 
 ### Statements (`abstract record Stmt`)
@@ -246,6 +247,13 @@ Check(List<ModuleDecl>, ResolveResult) → IReadOnlyList<Diagnostic>
 - `EmitMultiVarDecl`: pre-allocates return buffer in the caller's frame (`RetBufOffsets[stmt]`); LEA EAX → save → push user args R-L → reload → push as callee arg → CALL → ADD ESP.
 - `EmitMultiAssignStmt`: SUB ESP to allocate a temp buffer → LEA EAX ESP → save → push user args R-L → reload → push as callee arg → CALL → ADD ESP twice → pop each return value into its existing local slot (or ADD ESP 4 for discards).
 - `FunCtx` additions: `string? ReturnType`, `List<string> FunReturnTypes`, `Dictionary<MultiVarDecl, int> RetBufOffsets`.
+
+### Named arguments (Slice 17)
+
+- Parser: `ParseCallArgs` detects `ident:` at argument position via one-token lookahead; collects names in a parallel `List<string?>` and sets `CallExpr.ArgNames` (null when all positional).
+- `FunCtx` gains `Dictionary<string, List<Param>> FunParamLists` — built in `Emit` from all `FunDecl`s, passed through `EmitFun`.
+- `ReorderArgs(CallExpr, FunCtx)` — maps named args to declared parameter positions; returns a reordered `List<Expr>` ready for R-L emission.
+- Applied in `EmitCallExpr`, `EmitMultiVarDecl`, and `EmitMultiAssignStmt`; positional calls are unaffected (null check, no reorder).
 
 ### Builtins (Slice 16)
 
