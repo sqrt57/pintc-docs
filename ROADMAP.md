@@ -188,9 +188,10 @@ Tuple return types, multi-variable declaration (`var (a: T, b: T) = f()`), multi
 170 tests passing (140 unit, 4 integration, 26 e2e).
 E2e: [slice15.pnt](examples/slice15.pnt), [slice15-multiassign.pnt](examples/slice15-multiassign.pnt).
 
-### Slice 16 — Builtins
+### Slice 16 — Builtins ✓
 
 `cast`, `sizeof`, `divmod`, `mul`, `length`, `to_i8`…`to_u32`.
+174 tests passing (140 unit, 4 integration, 30 e2e).
 
 ### Slice 17 — Named arguments
 

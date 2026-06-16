@@ -1,12 +1,12 @@
 # pintc-cs — Implementation Snapshot
 
-**As of Slice 15 (2026-06-15). 170 tests passing (140 unit, 4 integration, 26 e2e).**
+**As of Slice 16 (2026-06-16). 174 tests passing (140 unit, 4 integration, 30 e2e).**
 
 ---
 
 ## TL;DR
 
-- **Slices complete:** 1–15. Next: Slice 16.
+- **Slices complete:** 1–16. Next: Slice 17.
 - **Pipeline:** Lex → Parse → Resolve → TypeCheck → Codegen → PE emit. All phases wired end-to-end.
 - **Output:** PE32 EXE or DLL written directly — no assembler/linker dependency.
 - **Codegen:** stack-based x86, no register allocator. All values go through the stack (`push`/`pop`). EAX = expression result; ECX = right operand or scratch.
@@ -104,6 +104,12 @@ All nodes are C# `record`s. No `SourceSpan` yet.
 | `CharLiteralExpr` | `byte Value` |
 | `StringLiteralExpr` | `byte[] Bytes` |
 | `StringConstExpr` | `uint RdataOffset, int ByteCount` |
+| `CastExpr` | `Expr Value, string TargetType` |
+| `SizeofExpr` | `string TypeName` |
+| `LengthExpr` | `string ArrayName` |
+| `ToTypeExpr` | `Expr Value, string TargetType` |
+| `DivmodExpr` | `Expr A, Expr B` |
+| `MulWideExpr` | `Expr A, Expr B` |
 
 `CallExpr.Qualifier` non-null for qualified calls (`C.add(...)` → Qualifier=`"C"`).
 `StringConstExpr` is an internal node produced by const-eval when a `StringLiteralExpr` is allocated into `.rdata`; never appears in the parsed AST.
@@ -116,8 +122,8 @@ All nodes are C# `record`s. No `SourceSpan` yet.
 
 `ForStmt` carries: VarName, VarTypeName, VarInit, Condition, PostName, PostValue, Body.
 `ReturnStmt` carries: `List<Expr> Values` (single-element for single return; multi-element for tuple return).
-`MultiVarDecl` carries: `List<(string? Name, string? TypeName)> Items, CallExpr Call` — `null` Name = discard.
-`MultiAssignStmt` carries: `List<string?> Names, CallExpr Call` — `null` = discard.
+`MultiVarDecl` carries: `List<(string? Name, string? TypeName)> Items, Expr Call` — `null` Name = discard; `Call` is `CallExpr`, `DivmodExpr`, or `MulWideExpr`.
+`MultiAssignStmt` carries: `List<string?> Names, Expr Call` — `null` = discard; `Call` is `CallExpr`, `DivmodExpr`, or `MulWideExpr`.
 
 ### Module-level declarations
 
@@ -240,6 +246,19 @@ Check(List<ModuleDecl>, ResolveResult) → IReadOnlyList<Diagnostic>
 - `EmitMultiVarDecl`: pre-allocates return buffer in the caller's frame (`RetBufOffsets[stmt]`); LEA EAX → save → push user args R-L → reload → push as callee arg → CALL → ADD ESP.
 - `EmitMultiAssignStmt`: SUB ESP to allocate a temp buffer → LEA EAX ESP → save → push user args R-L → reload → push as callee arg → CALL → ADD ESP twice → pop each return value into its existing local slot (or ADD ESP 4 for discards).
 - `FunCtx` additions: `string? ReturnType`, `List<string> FunReturnTypes`, `Dictionary<MultiVarDecl, int> RetBufOffsets`.
+
+### Builtins (Slice 16)
+
+All builtins are fully inline — no stubs or helper functions.
+
+- `cast(expr, T)` → emit expr; `AND EAX, mask` for `u8`/`u16`; no-op for `u32`.
+- `to_u8/u16` → `AND EAX, 0xFF/0xFFFF`; `to_i8/i16` → `MOVSX EAX, AL/AX`; `to_u32/i32` → no-op.
+- `sizeof(T)` → `PUSH imm(ByteSize(T))` at compile time; `ByteSize([N]T) = N * Stride(elem)`.
+- `length(arr)` → `PUSH imm(N)` from `[N]T` type; compile-time constant.
+- `DivmodExpr`/`MulWideExpr` in `MultiVarDecl`/`MultiAssignStmt`: inline `XOR EDX,EDX; DIV ECX` or `MUL ECX`; results written directly to pre-allocated frame slots with `MOV [EBP+disp8], EAX/EDX`. No hidden-pointer protocol needed.
+
+New X86 helpers: `AndEaxImm32`, `MovsxEaxAl`, `MovsxEaxAx`, `MulEcx`, `MovEbpDisp8Eax`, `MovEbpDisp8Edx`.
+New Codegen helper: `ByteSize(typeName, recordMap)` — actual byte width (vs. `StackSlotSize` which gives stack-slot width).
 
 ### String and char literals (Slice 14)
 
