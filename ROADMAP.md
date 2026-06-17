@@ -217,11 +217,12 @@ Spec: [§ Named parameters](pint-spec-v0.7.md#named-parameters).
 175 tests passing (140 unit, 4 integration, 31 e2e).
 E2e: [slice17.pnt](examples/slice17.pnt).
 
-### Slice 18 — Named return values
+### Slice 18 — Named return values ✓
 
-Named return list in function signatures; named form in `return` statements (order-independent); named declaration-unpack (`var (ret: v: T, ...) = f()`); named assign-unpack (`(ret: v, ...) = f()`). All named forms are order-independent.
+Named return list in function signatures; named form in `return` statements (order-independent); named assign-unpack (`(ret: v, ...) = f()`, order-independent). The `var` declaration form is always positional.
 Spec: [pint-spec-v0.7.md § Named return values](pint-spec-v0.7.md#named-return-values).
-E2e: [slice18.pnt](examples/slice18.pnt), [slice18-named-unpack.pnt](examples/slice18-named-unpack.pnt), [slice18-named-decl.pnt](examples/slice18-named-decl.pnt).
+177 tests passing (140 unit, 4 integration, 33 e2e).
+E2e: [slice18.pnt](examples/slice18.pnt), [slice18-named-unpack.pnt](examples/slice18-named-unpack.pnt).
 
 ### Slice 19 — Array literals
 

@@ -700,17 +700,15 @@ The `return` statement may use named or positional form, but not both. Named for
 is only valid when the function's return list is named; names must match the return
 names exactly.
 
-Call site unpacking may use named or positional form, but not both. Named unpacking
-is only valid when the called function's return list is named; the names in the
-unpack must match the return names exactly. `_` is valid in either form.
+The `var` declaration form is always positional — variable names are chosen by the
+caller and are independent of any names in the function's return list. The assign
+form (assigning to already-declared variables) may use named or positional form,
+but not both. Named form is only valid when the called function's return list is
+named; names must match exactly. `_` is valid in either form.
 
 ```
 // positional unpack — var form introduces new variables:
 var (f: ^File, e: Error) = open_file(@path, len);
-
-// named declaration — var form with return name prefix; order independent:
-var (file: f: ^File, err: e: Error) = open_file(@path, len);
-var (err: e: Error, file: f: ^File) = open_file(@path, len);  // order independent
 
 // named unpack — assigns to existing variables; order independent:
 var f: ^File;
@@ -741,19 +739,9 @@ that position — no variable is introduced and no type annotation is required:
 var (file: ^File, _) = open_file(@path, len);   // discard second return
 ```
 
-The positional `var` form uses `name: Type` elements and is always order-by-position.
-Variable names are chosen by the caller and are independent of any names in the
-function's return list.
-
-When the called function's return list is named, the named `var` form may be used
-instead. Each element has the form `return_name: var_name: Type`, and positions are
-order-independent. Either all elements use the named form or all use the positional
-form — mixing is a compile error.
-
-```
-var (file: f: ^File, err: e: Error) = open_file(@path, len);    // in order
-var (err: e: Error, file: f: ^File) = open_file(@path, len);    // out of order
-```
+Each element has the form `name: Type`. Variable names are chosen by the caller and
+are independent of any names in the function's return list. Positions are always
+in declaration order.
 
 The untyped form `var file, err = f()` is not valid.
 

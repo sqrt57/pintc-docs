@@ -206,7 +206,11 @@ Either all `ReturnItem`s carry a name or none do — a semantic constraint, not 
     ForInit   = "var" identifier ":" Type "=" Expr .
     ForPost   = Expr "=" Expr .                                              (* LHS must be assignable *)
 
-    ReturnStmt   = "return" [ Expr { "," Expr } ] ";" .
+    ReturnStmt      = "return" [ ReturnArgs ] ";" .
+    ReturnArgs      = NamedReturnArg { "," NamedReturnArg }    (* named form — all or none *)
+                    | Expr { "," Expr }                         (* positional form *)
+                    .
+    NamedReturnArg  = identifier ":" Expr .
     BreakStmt    = "break" [ identifier ] ";" .
     ContinueStmt = "continue" [ identifier ] ";" .
 

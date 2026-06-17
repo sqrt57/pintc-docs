@@ -1,12 +1,12 @@
 # pintc-cs — Implementation Snapshot
 
-**As of Slice 17 (2026-06-16). 175 tests passing (140 unit, 4 integration, 31 e2e).**
+**As of Slice 18 (2026-06-17). 177 tests passing (140 unit, 4 integration, 33 e2e).**
 
 ---
 
 ## TL;DR
 
-- **Slices complete:** 1–17. Next: Slice 18.
+- **Slices complete:** 1–18. Next: Slice 19.
 - **Pipeline:** Lex → Parse → Resolve → TypeCheck → Codegen → PE emit. All phases wired end-to-end.
 - **Output:** PE32 EXE or DLL written directly — no assembler/linker dependency.
 - **Codegen:** stack-based x86, no register allocator. All values go through the stack (`push`/`pop`). EAX = expression result; ECX = right operand or scratch.
@@ -30,7 +30,6 @@
 - No `SourceSpan` on AST nodes — error messages lack line/column.
 - `CollectLocals` allocates one slot per name; sibling for-loop vars with the same name share the slot (harmless today).
 - `AddEspImm8`/`SubEspImm8` use `imm8` — max 127 bytes; breaks with > 31 return values or args.
-- Named multi-return unpack (`(file: f, err: e) = g()`) not implemented (Slice 18).
 - Multi-return calls as expressions (not in `MultiVarDecl`/`MultiAssignStmt`) not supported.
 
 ---
@@ -122,9 +121,10 @@ All nodes are C# `record`s. No `SourceSpan` yet.
 `LoopStmt`, `BreakStmt`, `ContinueStmt`, `ForStmt`, `MultiVarDecl`, `MultiAssignStmt`
 
 `ForStmt` carries: VarName, VarTypeName, VarInit, Condition, PostName, PostValue, Body.
-`ReturnStmt` carries: `List<Expr> Values` (single-element for single return; multi-element for tuple return).
+`ReturnStmt` carries: `List<Expr> Values, List<string?>? ReturnNames` — `ReturnNames` non-null when named form (`return name: val, ...`).
 `MultiVarDecl` carries: `List<(string? Name, string? TypeName)> Items, Expr Call` — `null` Name = discard; `Call` is `CallExpr`, `DivmodExpr`, or `MulWideExpr`.
-`MultiAssignStmt` carries: `List<string?> Names, Expr Call` — `null` = discard; `Call` is `CallExpr`, `DivmodExpr`, or `MulWideExpr`.
+`MultiAssignStmt` carries: `List<string?> Names, Expr Call, List<string?>? ReturnNames` — `ReturnNames` non-null when named form (`(ret: v, ...) = f()`); `null` Name = discard.
+`FunDecl` carries: `List<string?>? ReturnNames` — non-null when the function's return list is named; parallel to the return types.
 
 ### Module-level declarations
 
@@ -247,6 +247,15 @@ Check(List<ModuleDecl>, ResolveResult) → IReadOnlyList<Diagnostic>
 - `EmitMultiVarDecl`: pre-allocates return buffer in the caller's frame (`RetBufOffsets[stmt]`); LEA EAX → save → push user args R-L → reload → push as callee arg → CALL → ADD ESP.
 - `EmitMultiAssignStmt`: SUB ESP to allocate a temp buffer → LEA EAX ESP → save → push user args R-L → reload → push as callee arg → CALL → ADD ESP twice → pop each return value into its existing local slot (or ADD ESP 4 for discards).
 - `FunCtx` additions: `string? ReturnType`, `List<string> FunReturnTypes`, `Dictionary<MultiVarDecl, int> RetBufOffsets`.
+
+### Named return values (Slice 18)
+
+- `fun f() -> (quot: u32, rem: u32)` — return names parsed by `ParseReturnType(out var retNames)`; stored in `FunDecl.ReturnNames` (null when positional).
+- Named return statement: `return rem: a%b, quot: a/b;` — parser detects `ident:` prefix on first value; `ReturnStmt.ReturnNames` holds the given names. `EmitReturnStmt` calls `ReorderReturnValues` to put values in declared order before emission.
+- Named assign-unpack: `(quot: q, rem: r) = f();` — parser detects `ident:` at first element; `MultiAssignStmt.ReturnNames` holds return-side names. `EmitMultiAssignStmt` calls `ReorderAssignNames` to put local-variable names in declared return order before popping from the buffer.
+- `FunCtx` additions: `List<string?> ReturnNames` (this function's return names), `Dictionary<string, List<string?>> FunReturnNames` (all named-return Pint funs, keyed by name).
+- The `var` declaration form is always positional — no named declaration form.
+- 177 tests (140 unit, 4 integration, 33 e2e).
 
 ### Named arguments (Slice 17)
 

@@ -4,6 +4,15 @@ Tracks language spec versions and compiler releases.
 
 ## Compiler
 
+#### Slice 18 — Named return values
+
+- Named return list in function signatures: `fun f() -> (quot: u32, rem: u32)` — `FunDecl` gains `List<string?>? ReturnNames`; `ParseReturnType` populates it via `out` parameter
+- Named return statement: `return rem: a%b, quot: a/b;` — order-independent; `ReturnStmt` gains `List<string?>? ReturnNames`; `EmitReturnStmt` reorders values to declared position via `ReorderReturnValues`
+- Named assign-unpack: `(rem: r, quot: q) = f();` — order-independent; `MultiAssignStmt` gains `List<string?>? ReturnNames`; `EmitMultiAssignStmt` reorders local names to declared position via `ReorderAssignNames`
+- `FunCtx` gains `List<string?> ReturnNames` and `Dictionary<string, List<string?>> FunReturnNames`
+- The `var` declaration form is always positional — no named declaration form
+- 177 tests (140 unit, 4 integration, 33 e2e)
+
 #### Slice 17 — Named arguments
 
 - `f(a: x, b: y)` named call syntax — any argument can be passed by its declared parameter name
