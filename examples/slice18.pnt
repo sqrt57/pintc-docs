@@ -1,0 +1,29 @@
+module main {
+
+    [dll_import(dll="kernel32.dll", entry_point="ExitProcess")]
+    [noreturn]
+    extern fun exit_process(code: u32) -> ();
+
+    fun divrem(a: u32, b: u32) -> (quot: u32, rem: u32) {
+        return quot: a / b, rem: a % b;
+    }
+
+    fun divrem_rev(a: u32, b: u32) -> (quot: u32, rem: u32) {
+        // named return out of declared order — key order-independence check
+        return rem: a % b, quot: a / b;
+    }
+
+    [win32_entry]
+    [noreturn]
+    fun main() -> () {
+        var (q: u32, r: u32) = divrem(10, 3);
+        if (q != 3) { exit_process(1); }
+        if (r != 1) { exit_process(2); }
+
+        var (q2: u32, r2: u32) = divrem_rev(7, 2);
+        if (q2 != 3) { exit_process(3); }
+        if (r2 != 1) { exit_process(4); }
+
+        exit_process(0);
+    }
+}

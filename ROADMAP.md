@@ -219,8 +219,9 @@ E2e: [slice17.pnt](examples/slice17.pnt).
 
 ### Slice 18 — Named return values
 
-Named return list in function signatures; named unpack at call site.
+Named return list in function signatures; named form in `return` statements (order-independent); named declaration-unpack (`var (ret: v: T, ...) = f()`); named assign-unpack (`(ret: v, ...) = f()`). All named forms are order-independent.
 Spec: [pint-spec-v0.7.md § Named return values](pint-spec-v0.7.md#named-return-values).
+E2e: [slice18.pnt](examples/slice18.pnt), [slice18-named-unpack.pnt](examples/slice18-named-unpack.pnt), [slice18-named-decl.pnt](examples/slice18-named-decl.pnt).
 
 ### Slice 19 — Array literals
 
