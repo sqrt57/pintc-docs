@@ -71,6 +71,7 @@ module main {
 ```
 
 Produces a real Windows EXE that exits cleanly.
+Spec: [§ Entry Point](pint-spec-v0.7.md#entry-point), [§ extern declarations](pint-spec-v0.7.md#extern-declarations), [§ Attributes](pint-spec-v0.7.md#attributes).
 
 | Step | Deliverable |
 |---|---|
@@ -103,12 +104,14 @@ E2e: [slice1.pnt](examples/slice1.pnt).
 ### Slice 2 — Module variables ✓
 
 Module-scope `var` for integer and bool types; `.data` section in PE32.
+Spec: [§ Variables](pint-spec-v0.7.md#variables), [§ Module-scope pre-collection](pint-spec-v0.7.md#module-scope-pre-collection).
 129 tests passing (123 unit, 2 integration, 4 e2e).
 E2e: [slice2.pnt](examples/slice2.pnt).
 
 ### Slice 3 — Local variables ✓
 
 `var` declarations inside function bodies; stack slot allocation.
+Spec: [§ Variables](pint-spec-v0.7.md#variables), [§ Block scope](pint-spec-v0.7.md#block-scope).
 140 tests passing (131 unit, 4 integration, 5 e2e).
 E2e: [slice3.pnt](examples/slice3.pnt).
 
@@ -117,48 +120,56 @@ E2e: [slice3.pnt](examples/slice3.pnt).
 Binary operators: arithmetic (`+`, `-`, `*`, `/`, `%`), comparison (`<`, `>`, `<=`, `>=`, `==`, `!=`),
 boolean logic (`and`, `or`), bitwise (`&`, `|`, `xor`), shift (`<<`, `>>`).
 Unary operators: `-`, `~`, `not`. Bool literals (`true`, `false`). Full operator precedence table.
+Spec: [§ Operators](pint-spec-v0.7.md#operators).
 142 tests passing (131 unit, 4 integration, 7 e2e).
 E2e: [slice4.pnt](examples/slice4.pnt), [slice4-precedence.pnt](examples/slice4-precedence.pnt).
 
 ### Slice 5 — if/else ✓
 
 `if`/`else` statements; `else if` chains; nested blocks.
+Spec: [§ Control Flow](pint-spec-v0.7.md#control-flow).
 143 tests passing (131 unit, 4 integration, 8 e2e).
 E2e: [slice5.pnt](examples/slice5.pnt).
 
 ### Slice 6 — while, loop, break, continue ✓
 
 `while`, `loop`, `break`, `continue`. Local variable assignment (`name = expr`).
+Spec: [§ Control Flow](pint-spec-v0.7.md#control-flow).
 151 tests passing (138 unit, 4 integration, 9 e2e).
 E2e: [slice6.pnt](examples/slice6.pnt).
 
 ### Slice 7 — for ✓
 
 `for` statements.
+Spec: [§ Control Flow](pint-spec-v0.7.md#control-flow).
 152 tests passing (138 unit, 4 integration, 10 e2e).
 E2e: [slice7.pnt](examples/slice7.pnt).
 
 ### Slice 8 — Arrays ✓
 
 Array types (`[N]T`), index expressions (`a[i]`), element assignment (`a[i] = v`).
+Spec: [§ Arrays](pint-spec-v0.7.md#arrays).
 153 tests passing (138 unit, 4 integration, 11 e2e).
 E2e: [slice8.pnt](examples/slice8.pnt).
 
 ### Slice 9 — Records ✓
 
 Record declarations, field access (`.`), nested records.
+Spec: [§ Records](pint-spec-v0.7.md#records).
 154 tests passing (138 unit, 4 integration, 12 e2e).
 E2e: [slice9-records.pnt](examples/slice9-records.pnt).
 
 ### Slice 10 — Pointers ✓
 
 Pointer types (`^T`), address-of (`@`), dereference (`p^`), arrow (`->`), pointer arithmetic.
+Spec: [§ Pointers](pint-spec-v0.7.md#pointers).
 155 tests passing (138 unit, 4 integration, 13 e2e).
 E2e: [slice10-pointers.pnt](examples/slice10-pointers.pnt).
 
 ### Slice 11 — Modules ✓
 
 `import`/`export`, cross-module name resolution, multi-file compilation, `return` statement, DLL output (`.edata`).
+Spec: [§ Module System](pint-spec-v0.7.md#module-system), [§ Multi-file modules](pint-spec-v0.7.md#multi-file-modules), [§ Exporting symbols](pint-spec-v0.7.md#exporting-symbols).
 158 tests passing (138 unit, 4 integration, 16 e2e).
 E2e: [slice11.pnt](examples/slice11.pnt) (import/export, single file),
 [slice11-multifile-calc.pnt](examples/slice11-multifile-calc.pnt) + [slice11-multifile-main.pnt](examples/slice11-multifile-main.pnt) (multi-file),
@@ -167,62 +178,74 @@ E2e: [slice11.pnt](examples/slice11.pnt) (import/export, single file),
 ### Slice 12 — Local constants ✓
 
 `const` at function scope. `LocalConstDecl` AST node; `ParseLocalConstDecl`; `Consts` dict in `FunCtx` — literal inits inlined at use sites; non-literal inits allocated a stack slot and evaluated once at the declaration site.
+Spec: [§ Variables](pint-spec-v0.7.md#variables).
 162 tests passing (140 unit, 4 integration, 18 e2e).
 E2e: [slice12.pnt](examples/slice12.pnt).
 
 ### Slice 13 — Module constants ✓
 
 `const NAME: T = expr;` at module scope; compile-time expression evaluation. `ModuleConstDecl` AST node; `ParseModuleConstDecl`; `BuildModuleConstMap` evaluates all initializers to literals (supports literals, const-of-consts, arithmetic, unary ops); evaluated map seeded into `FunCtx.Consts` so uses inside functions inline the value. Forward references work via recursive resolver with memoization.
+Spec: [§ Variables](pint-spec-v0.7.md#variables), [§ Compile-Time Expressions](pint-spec-v0.7.md#compile-time-expressions).
 163 tests passing (140 unit, 4 integration, 19 e2e).
 E2e: [slice13.pnt](examples/slice13.pnt).
 
 ### Slice 14 — Strings and char literals ✓
 
 String literals (`.rdata`), `string` type (`.ptr`, `.len`), char literals (`byte`), `^byte` dereference, `Stride()` for pointer arithmetic.
+Spec: [§ String Literals](pint-spec-v0.7.md#string-literals), [§ Character literals](pint-spec-v0.7.md#character-literals).
 167 tests passing (140 unit, 4 integration, 23 e2e).
 E2e: [slice14.pnt](examples/slice14.pnt).
 
 ### Slice 15 — Multiple return values ✓
 
 Tuple return types, multi-variable declaration (`var (a: T, b: T) = f()`), multi-assign (`(a, b) = f()`), discard (`_`), hidden pointer calling convention.
+Spec: [§ Multiple return values](pint-spec-v0.7.md#multiple-return-values), [§ Multi-return declaration syntax](pint-spec-v0.7.md#multi-return-declaration-syntax).
 170 tests passing (140 unit, 4 integration, 26 e2e).
 E2e: [slice15.pnt](examples/slice15.pnt), [slice15-multiassign.pnt](examples/slice15-multiassign.pnt).
 
 ### Slice 16 — Builtins ✓
 
 `cast`, `sizeof`, `divmod`, `mul`, `length`, `to_i8`…`to_u32`.
+Spec: [§ Type Casts](pint-spec-v0.7.md#type-casts), [§ Builtins](pint-spec-v0.7.md#builtins).
 174 tests passing (140 unit, 4 integration, 30 e2e).
 E2e: [slice16-cast.pnt](examples/slice16-cast.pnt), [slice16-sizeof.pnt](examples/slice16-sizeof.pnt), [slice16-divmod.pnt](examples/slice16-divmod.pnt), [slice16-mul.pnt](examples/slice16-mul.pnt).
 
 ### Slice 17 — Named arguments ✓
 
 Named call syntax (`f(a: x, b: y)`); order-independent argument passing.
+Spec: [§ Named parameters](pint-spec-v0.7.md#named-parameters).
 175 tests passing (140 unit, 4 integration, 31 e2e).
 E2e: [slice17.pnt](examples/slice17.pnt).
 
 ### Slice 18 — Named return values
 
 Named return list in function signatures; named unpack at call site.
+Spec: [pint-spec-v0.7.md § Named return values](pint-spec-v0.7.md#named-return-values).
 
 ### Slice 19 — Array literals
 
 Array literal expressions (`[1, 2, 3]`); element type inferred from context.
+Spec: [§ Arrays](pint-spec-v0.7.md#arrays).
 
 ### Slice 20 — Record literals
 
 Record literal expressions (`{ x: 1, y: 2 }`); type inferred from context.
+Spec: [§ Records § Initialization](pint-spec-v0.7.md#initialization).
 
 ### Slice 21 — Enums
 
 Enum declarations, variant references (`E.Member`), equality, cast to/from underlying type.
+Spec: [§ Enums](pint-spec-v0.7.md#enums).
 
 ### Slice 22 — Named break/continue
 
 Labels on loops; `break label` and `continue label` for nested loop control.
+Spec: [§ Control Flow](pint-spec-v0.7.md#control-flow).
 
 ### Slice 23 — Floats
 
 `f32`/`f64` literals, arithmetic, and comparisons; FPU stack codegen (x87).
+Spec: [§ Float literals](pint-spec-v0.7.md#float-literals).
 
 ## Future Work
 
