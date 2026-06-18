@@ -1,0 +1,58 @@
+module main {
+
+    [dll_import(dll="kernel32.dll", entry_point="ExitProcess")]
+    [noreturn]
+    extern fun exit_process(code: u32) -> ();
+
+    [win32_entry]
+    [noreturn]
+    fun main() -> () {
+        // break label: exit labeled while from nested for
+        var x: u32 = 0;
+        outer: while (x < 10) {
+            for (var i: u32 = 0; i < 5; i = i + 1) {
+                if (i == 2) { break outer; }
+            }
+            x = x + 1;
+        }
+        if (x != 0) { exit_process(1); }
+
+        // continue label: skip rest of outer body from nested for
+        var count: u32 = 0;
+        var j: u32 = 0;
+        accum: while (j < 3) {
+            j = j + 1;
+            for (var k: u32 = 0; k < 5; k = k + 1) {
+                if (k == 1) { continue accum; }
+                count = count + 1;
+            }
+        }
+        if (count != 3) { exit_process(2); }
+
+        // break label on labeled for
+        var found: u32 = 99;
+        search: for (var a: u32 = 0; a < 4; a = a + 1) {
+            for (var b: u32 = 0; b < 4; b = b + 1) {
+                if (a == 2 and b == 1) {
+                    found = a;
+                    break search;
+                }
+            }
+        }
+        if (found != 2) { exit_process(3); }
+
+        // break label on labeled loop
+        var n: u32 = 0;
+        scan: loop {
+            for (var c: u32 = 0; c < 5; c = c + 1) {
+                if (c == 3) {
+                    n = c;
+                    break scan;
+                }
+            }
+        }
+        if (n != 3) { exit_process(4); }
+
+        exit_process(0);
+    }
+}

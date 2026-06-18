@@ -4,6 +4,14 @@ Tracks language spec versions and compiler releases.
 
 ## Compiler
 
+#### Slice 22 — Named break/continue
+
+- `BreakStmt` and `ContinueStmt` gain an optional `Label` field; `WhileStmt`, `ForStmt`, and `LoopStmt` each gain an optional `Label` field — all default to `null`, preserving all existing call sites
+- Parser: `ident ':' (while|for|loop)` at statement position is detected via a 3-token lookahead in `ParseStmt`; the label is consumed and passed into the loop parse method; `ParseBreakStmt`/`ParseContinueStmt` consume an `Ident` before `;` when present
+- Codegen: `FunCtx` gains `LabeledBreakPatches` and `LabeledContinuePatches` (`Dictionary<string, List<int>>`); each loop emit method registers its label (if any) into these dicts before body emission, pointing to the same `List<int>` objects used for the loop's own backpatching, then removes the entry after patching; `EmitStmts` routes labeled `break`/`continue` to the dict instead of the per-loop local list
+- `continue label` on a labeled `while` patches to the condition re-evaluation; on a labeled `for` it patches to the post-step — matching unlabeled semantics in both cases
+- 190 tests (140 unit, 4 integration, 46 e2e)
+
 #### Slice 21 — Enums
 
 - `EnumVariant(string Name, Expr? Value)` and `EnumDecl(string Name, string? UnderlyingType, List<EnumVariant> Variants)` AST nodes; `ModuleDecl` gains `List<EnumDecl> Enums`

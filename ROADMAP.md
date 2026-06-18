@@ -245,10 +245,12 @@ Spec: [§ Enums](pint-spec-v0.7.md#enums).
 186 tests passing (140 unit, 4 integration, 42 e2e).
 E2e: [slice21.pnt](examples/slice21.pnt).
 
-### Slice 22 — Named break/continue
+### Slice 22 — Named break/continue ✓
 
 Labels on loops; `break label` and `continue label` for nested loop control.
 Spec: [§ Control Flow](pint-spec-v0.7.md#control-flow).
+190 tests passing (140 unit, 4 integration, 46 e2e).
+E2e: [slice22.pnt](examples/slice22.pnt).
 
 ### Slice 23 — Floats
 

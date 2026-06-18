@@ -1,12 +1,12 @@
 # pintc-cs — Implementation Snapshot
 
-**As of Slice 21 (2026-06-18). 186 tests passing (140 unit, 4 integration, 42 e2e).**
+**As of Slice 22 (2026-06-18). 190 tests passing (140 unit, 4 integration, 46 e2e).**
 
 ---
 
 ## TL;DR
 
-- **Slices complete:** 1–21. Next: Slice 22.
+- **Slices complete:** 1–22. Next: Slice 23.
 - **Pipeline:** Lex → Parse → Resolve → TypeCheck → Codegen → PE emit. All phases wired end-to-end.
 - **Output:** PE32 EXE or DLL written directly — no assembler/linker dependency.
 - **Codegen:** stack-based x86, no register allocator. All values go through the stack (`push`/`pop`). EAX = expression result; ECX = right operand or scratch.
@@ -248,6 +248,14 @@ Check(List<ModuleDecl>, ResolveResult) → IReadOnlyList<Diagnostic>
 - `EmitMultiVarDecl`: pre-allocates return buffer in the caller's frame (`RetBufOffsets[stmt]`); LEA EAX → save → push user args R-L → reload → push as callee arg → CALL → ADD ESP.
 - `EmitMultiAssignStmt`: SUB ESP to allocate a temp buffer → LEA EAX ESP → save → push user args R-L → reload → push as callee arg → CALL → ADD ESP twice → pop each return value into its existing local slot (or ADD ESP 4 for discards).
 - `FunCtx` additions: `string? ReturnType`, `List<string> FunReturnTypes`, `Dictionary<MultiVarDecl, int> RetBufOffsets`.
+
+### Named break/continue (Slice 22)
+
+- AST: `BreakStmt(string? Label = null)`, `ContinueStmt(string? Label = null)`. `WhileStmt`, `ForStmt`, `LoopStmt` each gain `string? Label = null` as a trailing optional field (backward-compatible default).
+- Parser: labeled loop syntax is `ident ':' (while|for|loop)` at statement position. `ParseStmt` detects this via a 3-token lookahead (`Ident`, `Colon`, `While|For|Loop`) before falling through to other dispatches. `ParseWhileStmt`, `ParseForStmt`, `ParseLoopStmt` each accept an optional `string? label` and set it on the returned node. `ParseBreakStmt`/`ParseContinueStmt` check for `Ident` before `;` and set `Label`.
+- Codegen: `FunCtx` gains `Dictionary<string, List<int>> LabeledBreakPatches` and `LabeledContinuePatches` — maps from label name to the patch-site lists of the enclosing labeled loop. Each loop emit method registers its label (if any) into these dicts before emitting the body, and removes it after patching. `EmitStmts` routes `BreakStmt`/`ContinueStmt` with a non-null label to the labeled dict instead of the per-loop local list. Because the dict entries ARE the same `List<int>` objects used by the enclosing loop, all patch sites are collected and patched at the correct target automatically.
+- `continue label` on a labeled `while` jumps to the condition re-evaluation (`whileTop`); on a labeled `for` it jumps to the post-step (`postOffset`), matching unlabeled `continue` semantics.
+- 190 tests (140 unit, 4 integration, 46 e2e).
 
 ### Enums (Slice 21)
 
