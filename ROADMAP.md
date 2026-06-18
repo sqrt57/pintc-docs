@@ -252,10 +252,12 @@ Spec: [§ Control Flow](pint-spec-v0.7.md#control-flow).
 190 tests passing (140 unit, 4 integration, 46 e2e).
 E2e: [slice22.pnt](examples/slice22.pnt).
 
-### Slice 23 — Floats
+### Slice 23 — Floats ✓
 
-`f32`/`f64` literals, arithmetic, and comparisons; FPU stack codegen (x87).
+`f32`/`f64` literals, arithmetic, comparisons, unary negate, float params and return values; FPU stack codegen (x87).
 Spec: [§ Float literals](pint-spec-v0.7.md#float-literals).
+196 tests passing (140 unit, 4 integration, 52 e2e).
+E2e: [slice23.pnt](examples/slice23.pnt).
 
 ## Future Work
 
