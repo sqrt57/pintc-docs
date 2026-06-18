@@ -259,7 +259,7 @@ Operators in decreasing precedence order: postfix, unary, `*`/`/`/`%`, `+`/`-`,
     RecordLit  = "{" FieldInit { "," FieldInit } "}" .
     FieldInit  = identifier ":" Expr .
     ArrayLit   = "[" Expr { "," Expr } "]" .
-    CastExpr   = "cast"   "(" Type "," Expr ")" .
+    CastExpr   = "cast"   "(" Expr "," Type ")" .
     SizeofExpr = "sizeof" "(" Type ")" .
 
     ArgList        = PositionalArgs | NamedArgs .

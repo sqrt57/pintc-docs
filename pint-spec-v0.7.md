@@ -383,8 +383,8 @@ if (d != Direction.South) { ... }
 Cast to and from the underlying integer type with `cast`:
 
 ```
-var i: i32        = cast(i32, d);
-var d2: Direction = cast(Direction, 1);  // Direction.South
+var i: i32        = cast(d, i32);
+var d2: Direction = cast(1, Direction);  // Direction.South
 ```
 
 ### String Literals
@@ -796,7 +796,7 @@ fun on_west(x: i32)  -> () { ... }
 
 var handlers: [4]^Handler = [@on_north, @on_south, @on_east, @on_west];
 
-var d: i32 = cast(i32, direction);
+var d: i32 = cast(direction, i32);
 handlers[d](value);    // dispatch by index
 ```
 
@@ -871,7 +871,7 @@ var y: u32 = -x;   // error: unary `-` on unsigned type
 
 ```
 var a: u32 = 0x80000000 >> 1;                       // logical:    0x40000000
-var b: i32 = cast(i32, 0x80000000) >> 1;            // arithmetic: 0xC0000000 (-1073741824)
+var b: i32 = cast(0x80000000, i32) >> 1;            // arithmetic: 0xC0000000 (-1073741824)
 ```
 
 A shift amount outside `[0, bit_width − 1]` is undefined behavior; a constant
@@ -900,25 +900,25 @@ the operation.
 
 ### Type Casts
 
-All explicit with `cast(T, x)`:
+All explicit with `cast(x, T)`:
 
 ```
 var x: i32 = 42;
-var y: i64 = cast(i64, x);    // numeric widening
-var z: i16 = cast(i16, x);    // numeric narrowing — no overflow check
-var u: u32 = cast(u32, x);    // signed → unsigned
+var y: i64 = cast(x, i64);    // numeric widening
+var z: i16 = cast(x, i16);    // numeric narrowing — no overflow check
+var u: u32 = cast(x, u32);    // signed → unsigned
 
 var p: ^i32 = @x;
-var q: ^()  = cast(^(), p);   // pointer → void pointer
-var r: ^i32 = cast(^i32, q);  // void pointer → typed pointer
+var q: ^()  = cast(p, ^());   // pointer → void pointer
+var r: ^i32 = cast(q, ^i32);  // void pointer → typed pointer
 ```
 
 Enums can be cast to and from their underlying integer type:
 
 ```
 var d: Direction  = Direction.North;
-var i: i32        = cast(i32, d);         // enum → int: always valid
-var d2: Direction = cast(Direction, i);   // int → enum: no range check
+var i: i32        = cast(d, i32);         // enum → int: always valid
+var d2: Direction = cast(i, Direction);   // int → enum: no range check
 ```
 
 Casting an integer value that does not correspond to any enum member is
@@ -963,7 +963,7 @@ const mid: ^byte = @buf[8];        // address of module-scope element — compil
 
 ### Builtins
 
-Type casts use `cast(T, x)` — see [Type Casts](#type-casts).
+Type casts use `cast(x, T)` — see [Type Casts](#type-casts).
 
 | Builtin | Description |
 |---|---|
@@ -1012,7 +1012,7 @@ integer type `T`, returning `(T, T)` — the high half first, the low half secon
 Signed operands are not accepted; cast to unsigned first.
 
 ```
-var (hi: u32, lo: u32) = mul(cast(u32, a), cast(u32, b));  // 32×32→64 split into two u32
+var (hi: u32, lo: u32) = mul(cast(a, u32), cast(b, u32));  // 32×32→64 split into two u32
 ```
 
 ---
@@ -1303,7 +1303,7 @@ module Main {
         var stdout: ^() = Con.get_std_handle(Con.STD_OUTPUT_HANDLE);
 
         const greeting: string = "Hello, Pint!\n";
-        var buf: Con.Buf = { ptr: greeting.ptr, len: cast(u32, greeting.len) };
+        var buf: Con.Buf = { ptr: greeting.ptr, len: cast(greeting.len, u32) };
 
         var i: usize = 0;
         while (i < 3) {
