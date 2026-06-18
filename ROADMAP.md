@@ -231,10 +231,12 @@ Spec: [§ Arrays](pint-spec-v0.7.md#arrays).
 179 tests passing (140 unit, 4 integration, 35 e2e).
 E2e: [slice19.pnt](examples/slice19.pnt).
 
-### Slice 20 — Record literals
+### Slice 20 — Record literals ✓
 
-Record literal expressions (`{ x: 1, y: 2 }`); type inferred from context.
+Record literal expressions (`{ x: 1, y: 2 }`); type inferred from context; field order is irrelevant; nested record literals supported.
 Spec: [§ Records § Initialization](pint-spec-v0.7.md#initialization).
+182 tests passing (140 unit, 4 integration, 38 e2e).
+E2e: [slice20.pnt](examples/slice20.pnt).
 
 ### Slice 21 — Enums
 

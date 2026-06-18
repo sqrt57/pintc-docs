@@ -1,12 +1,12 @@
 # pintc-cs — Implementation Snapshot
 
-**As of Slice 19 (2026-06-18). 179 tests passing (140 unit, 4 integration, 35 e2e).**
+**As of Slice 20 (2026-06-18). 182 tests passing (140 unit, 4 integration, 38 e2e).**
 
 ---
 
 ## TL;DR
 
-- **Slices complete:** 1–19. Next: Slice 20.
+- **Slices complete:** 1–20. Next: Slice 21.
 - **Pipeline:** Lex → Parse → Resolve → TypeCheck → Codegen → PE emit. All phases wired end-to-end.
 - **Output:** PE32 EXE or DLL written directly — no assembler/linker dependency.
 - **Codegen:** stack-based x86, no register allocator. All values go through the stack (`push`/`pop`). EAX = expression result; ECX = right operand or scratch.
@@ -248,6 +248,14 @@ Check(List<ModuleDecl>, ResolveResult) → IReadOnlyList<Diagnostic>
 - `EmitMultiVarDecl`: pre-allocates return buffer in the caller's frame (`RetBufOffsets[stmt]`); LEA EAX → save → push user args R-L → reload → push as callee arg → CALL → ADD ESP.
 - `EmitMultiAssignStmt`: SUB ESP to allocate a temp buffer → LEA EAX ESP → save → push user args R-L → reload → push as callee arg → CALL → ADD ESP twice → pop each return value into its existing local slot (or ADD ESP 4 for discards).
 - `FunCtx` additions: `string? ReturnType`, `List<string> FunReturnTypes`, `Dictionary<MultiVarDecl, int> RetBufOffsets`.
+
+### Record literals (Slice 20)
+
+- `RecordLiteralExpr(List<(string Field, Expr Value)> Fields)` — parsed from `{ field: expr, ... }` in primary-expression position.
+- `EmitLocalVarDecl` special-cases `RecordLiteralExpr`: delegates to `EmitRecordLiteralInto(lit, typeName, baseOff, ctx)`.
+- `EmitRecordLiteralInto` iterates the record's declared fields in order, looks each up by name in the literal, computes `fieldOff` by accumulating `StackSlotSize`, stores each scalar value via `EmitExpr` + `PopToEbpDisp8((sbyte)(baseOff + fieldOff))`. Nested `RecordLiteralExpr` field values recurse.
+- Field-order independence falls out naturally: iteration is over the declared field list; the literal's field order is irrelevant.
+- 182 tests (140 unit, 4 integration, 38 e2e).
 
 ### Array literals (Slice 19)
 

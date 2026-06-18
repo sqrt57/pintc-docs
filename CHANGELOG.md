@@ -4,6 +4,13 @@ Tracks language spec versions and compiler releases.
 
 ## Compiler
 
+#### Slice 20 — Record literals
+
+- `RecordLiteralExpr(List<(string Field, Expr Value)> Fields)` AST node
+- Parser: `{ field: expr, ... }` parsed in primary-expression position — type inferred from `LocalVarDecl` context; field order is irrelevant
+- Codegen: `EmitLocalVarDecl` special-cases `RecordLiteralExpr` — delegates to `EmitRecordLiteralInto`, which iterates fields in declared order, looks up each by name, and stores to `[EBP + base + fieldOffset]`; nested `RecordLiteralExpr` values are handled recursively
+- 182 tests (140 unit, 4 integration, 38 e2e)
+
 #### Slice 19 — Array literals
 
 - `ArrayLiteralExpr(List<Expr> Elements)` AST node

@@ -1,0 +1,39 @@
+module main {
+
+    [dll_import(dll="kernel32.dll", entry_point="ExitProcess")]
+    [noreturn]
+    extern fun exit_process(code: u32) -> ();
+
+    record Point {
+        x: u32;
+        y: u32;
+    }
+
+    record Line {
+        start: Point;
+        end:   Point;
+    }
+
+    [win32_entry]
+    [noreturn]
+    fun main() -> () {
+        // record literal — fields in declared order
+        var p: Point = { x: 10, y: 20 };
+        if (p.x != 10) { exit_process(1); }
+        if (p.y != 20) { exit_process(2); }
+
+        // field order is irrelevant
+        var q: Point = { y: 99, x: 42 };
+        if (q.x != 42) { exit_process(3); }
+        if (q.y != 99) { exit_process(4); }
+
+        // nested record literal
+        var ln: Line = { start: { x: 1, y: 2 }, end: { x: 5, y: 6 } };
+        if (ln.start.x != 1) { exit_process(5); }
+        if (ln.start.y != 2) { exit_process(6); }
+        if (ln.end.x   != 5) { exit_process(7); }
+        if (ln.end.y   != 6) { exit_process(8); }
+
+        exit_process(0);
+    }
+}
