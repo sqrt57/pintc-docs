@@ -1,0 +1,55 @@
+module main {
+
+    [dll_import(dll="kernel32.dll", entry_point="ExitProcess")]
+    [noreturn]
+    extern fun exit_process(code: u32) -> ();
+
+    fun average(a: f64, b: f64) -> f64 {
+        return (a + b) / 2.0;
+    }
+
+    [win32_entry]
+    [noreturn]
+    fun main() -> () {
+        // f64 arithmetic
+        var sum: f64 = 1.0 + 2.0;
+        if (sum != 3.0) { exit_process(1); }
+
+        var diff: f64 = 5.5 - 2.5;
+        if (diff != 3.0) { exit_process(2); }
+
+        var prod: f64 = 2.5 * 4.0;
+        if (prod != 10.0) { exit_process(3); }
+
+        var quot: f64 = 10.0 / 4.0;
+        if (quot != 2.5) { exit_process(4); }
+
+        // f64 comparisons
+        if (1.5 >= 2.5) { exit_process(5); }
+        if (3.0 <= 2.0) { exit_process(6); }
+        if (2.0 > 2.0)  { exit_process(7); }
+        if (2.0 < 2.0)  { exit_process(8); }
+
+        // negation
+        var x: f64 = 3.0;
+        var neg: f64 = -x;
+        if (neg + 3.0 != 0.0) { exit_process(9); }
+
+        // exponent literals
+        var big: f64 = 1.0e3;
+        if (big != 1000.0) { exit_process(10); }
+
+        var small: f64 = 1.5e2;
+        if (small != 150.0) { exit_process(11); }
+
+        // f32
+        var a32: f32 = 1.0 + 2.0;
+        if (a32 != 3.0) { exit_process(12); }
+
+        // function returning float
+        var avg: f64 = average(3.0, 5.0);
+        if (avg != 4.0) { exit_process(13); }
+
+        exit_process(0);
+    }
+}

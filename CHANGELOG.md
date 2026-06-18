@@ -4,6 +4,18 @@ Tracks language spec versions and compiler releases.
 
 ## Compiler
 
+#### Slice 23 — Floats
+
+- `FloatLiteralExpr(double Value)` AST node; `TokenKind.FloatLit` (decimal + optional fractional + optional `e`/`E` exponent); parser produces `FloatLiteralExpr` via `double.Parse` with `InvariantCulture`
+- Codegen: `StackSlotSize` returns 8 for `f64` (f32 keeps 4); param offsets now accumulate using `StackSlotSize` instead of fixed `i*4`; `GetExprType` extended to cover `FloatLiteralExpr` → `"f64"`, `BinaryExpr` (both sides), `UnaryExpr`; `IsFloatType` helper
+- `EmitExprFloat`: recursively emits float expressions into FPU ST(0) — literals via push-bits + FLD + ADD ESP; var refs via FLD dword/qword [EBP+off]; arithmetic via FADD/FSUB/FMUL/FDIV `P`-forms (pop both, push result); unary negate via FCHS; calls via `EmitFloatCall`
+- `EmitFloatCmpToEax`: emits both operands into FPU, FUCOMPP → FNSTSW AX → SAHF → SETcc AL → MOVZX EAX, AL → PUSH EAX (so the existing `EmitIfStmt` path works unchanged)
+- `EmitFloatCall`: pushes float args via `EmitExprFloat` + SUB ESP + FSTP; integer args via `EmitExpr`; callee cleanup uses actual byte sizes; result left in ST(0)
+- `EmitLocalVarDecl` and `EmitAssignStmt`: intercept float targets — call `EmitExprFloat`, then FSTP to the local's EBP slot; `EmitReturnStmt`: float single-return calls `EmitExprFloat` and leaves result in ST(0) for caller
+- `EmitExpr` `BinaryExpr` case: detects float operands via `GetExprType`; routes comparisons to `EmitFloatCmpToEax`, throws for float arithmetic (must go through `EmitExprFloat`)
+- Scope: literals, arithmetic (+−×÷), comparisons (==≠<≤>≥), unary negate, float params, float return; does not cover float↔int cast, floats in records/arrays, module-scope float vars, or float in multi-return
+- 196 tests (140 unit, 4 integration, 52 e2e)
+
 #### Slice 22 — Named break/continue
 
 - `BreakStmt` and `ContinueStmt` gain an optional `Label` field; `WhileStmt`, `ForStmt`, and `LoopStmt` each gain an optional `Label` field — all default to `null`, preserving all existing call sites

@@ -1,12 +1,12 @@
 # pintc-cs — Implementation Snapshot
 
-**As of Slice 22 (2026-06-18). 190 tests passing (140 unit, 4 integration, 46 e2e).**
+**As of Slice 23 (2026-06-19). 196 tests passing (140 unit, 4 integration, 52 e2e).**
 
 ---
 
 ## TL;DR
 
-- **Slices complete:** 1–22. Next: Slice 23.
+- **Slices complete:** 1–23. No more planned slices.
 - **Pipeline:** Lex → Parse → Resolve → TypeCheck → Codegen → PE emit. All phases wired end-to-end.
 - **Output:** PE32 EXE or DLL written directly — no assembler/linker dependency.
 - **Codegen:** stack-based x86, no register allocator. All values go through the stack (`push`/`pop`). EAX = expression result; ECX = right operand or scratch.
@@ -158,7 +158,7 @@ record ModuleDecl(string Name, List<ExternFunDecl> Externs, List<FunDecl> Funs,
 ### Type strings
 
 Types are plain strings — no type AST node yet:
-`u8/u16/u32/u64`, `i8/i16/i32/i64`, `bool`, `byte`, `usize`, `isize`, `()`,
+`u8/u16/u32/u64`, `i8/i16/i32/i64`, `f32`, `f64`, `bool`, `byte`, `usize`, `isize`, `()`,
 `"[N]T"` (arrays), `"^T"` (pointers).
 
 ---
@@ -249,13 +249,26 @@ Check(List<ModuleDecl>, ResolveResult) → IReadOnlyList<Diagnostic>
 - `EmitMultiAssignStmt`: SUB ESP to allocate a temp buffer → LEA EAX ESP → save → push user args R-L → reload → push as callee arg → CALL → ADD ESP twice → pop each return value into its existing local slot (or ADD ESP 4 for discards).
 - `FunCtx` additions: `string? ReturnType`, `List<string> FunReturnTypes`, `Dictionary<MultiVarDecl, int> RetBufOffsets`.
 
+### Floats (Slice 23)
+
+- `FloatLiteralExpr(double Value)` AST node; `TokenKind.FloatLit` scanned in `ScanNumberLit` (decimal + optional fractional + optional `e`/`E` exponent); parser produces `FloatLiteralExpr` via `double.Parse(InvariantCulture)`.
+- `StackSlotSize` returns 8 for `f64`; f32 stays 4. Param offsets now accumulated with `StackSlotSize` instead of fixed `i*4`, so mixed-width param lists are laid out correctly.
+- `GetExprType` extended: `FloatLiteralExpr → "f64"`, `BinaryExpr` checks both sides, `UnaryExpr` propagates from operand. `IsFloatType(t)` helper: `t is "f32" or "f64"`.
+- `EmitExprFloat(expr, ctx, typeName)`: emits float expression into FPU ST(0) — literals push bit pattern(s) then `FLD [ESP]` + `ADD ESP, N`; var refs use `FLD dword/qword [EBP+off]`; arithmetic uses `FADDP`/`FSUBP`/`FMULP`/`FDIVP`; unary negate uses `FCHS`; calls delegate to `EmitFloatCall`.
+- `EmitFloatCmpToEax(b, ctx, floatType)`: emits both operands → `FUCOMPP` → `FNSTSW AX` → `SAHF` → `SETcc AL` (SETA/SETB/SETE/SETNE/SETAE/SETBE) → `MOVZX EAX, AL` → `PUSH EAX`. The pushed 0/1 feeds the unchanged `EmitIfStmt` path.
+- `EmitFloatCall(callExpr, ctx, retType)`: pushes float args via `EmitExprFloat` + `SUB ESP, N` + `FSTP [ESP]`; integer args via `EmitExpr` (already pushed); cleanup = sum of actual arg byte sizes; result left in ST(0).
+- `EmitLocalVarDecl` and `EmitAssignStmt`: intercept float types — `EmitExprFloat` then `FSTP dword/qword [EBP+off]`. `EmitReturnStmt`: float single-value return calls `EmitExprFloat`, leaves result in ST(0), falls through to epilogue.
+- `EmitExpr` `BinaryExpr` case: checks `GetExprType` on both operands; if float type detected, routes comparisons to `EmitFloatCmpToEax` and breaks; arithmetic throws (must use `EmitExprFloat` path).
+- Scope: literals, `+−×÷`, comparisons, unary negate, float params, float return values. Not covered: float↔int cast, floats in records/arrays, module-scope float vars, float in multi-return.
+- 196 tests (140 unit, 4 integration, 52 e2e).
+
 ### Named break/continue (Slice 22)
 
 - AST: `BreakStmt(string? Label = null)`, `ContinueStmt(string? Label = null)`. `WhileStmt`, `ForStmt`, `LoopStmt` each gain `string? Label = null` as a trailing optional field (backward-compatible default).
 - Parser: labeled loop syntax is `ident ':' (while|for|loop)` at statement position. `ParseStmt` detects this via a 3-token lookahead (`Ident`, `Colon`, `While|For|Loop`) before falling through to other dispatches. `ParseWhileStmt`, `ParseForStmt`, `ParseLoopStmt` each accept an optional `string? label` and set it on the returned node. `ParseBreakStmt`/`ParseContinueStmt` check for `Ident` before `;` and set `Label`.
 - Codegen: `FunCtx` gains `Dictionary<string, List<int>> LabeledBreakPatches` and `LabeledContinuePatches` — maps from label name to the patch-site lists of the enclosing labeled loop. Each loop emit method registers its label (if any) into these dicts before emitting the body, and removes it after patching. `EmitStmts` routes `BreakStmt`/`ContinueStmt` with a non-null label to the labeled dict instead of the per-loop local list. Because the dict entries ARE the same `List<int>` objects used by the enclosing loop, all patch sites are collected and patched at the correct target automatically.
 - `continue label` on a labeled `while` jumps to the condition re-evaluation (`whileTop`); on a labeled `for` it jumps to the post-step (`postOffset`), matching unlabeled `continue` semantics.
-- 190 tests (140 unit, 4 integration, 46 e2e).
+- 190 tests at the time of this slice (140 unit, 4 integration, 46 e2e); 196 after Slice 23.
 
 ### Enums (Slice 21)
 
