@@ -224,10 +224,12 @@ Spec: [pint-spec-v0.7.md § Named return values](pint-spec-v0.7.md#named-return-
 177 tests passing (140 unit, 4 integration, 33 e2e).
 E2e: [slice18.pnt](examples/slice18.pnt), [slice18-named-unpack.pnt](examples/slice18-named-unpack.pnt).
 
-### Slice 19 — Array literals
+### Slice 19 — Array literals ✓
 
 Array literal expressions (`[1, 2, 3]`); element type inferred from context.
 Spec: [§ Arrays](pint-spec-v0.7.md#arrays).
+179 tests passing (140 unit, 4 integration, 35 e2e).
+E2e: [slice19.pnt](examples/slice19.pnt).
 
 ### Slice 20 — Record literals
 

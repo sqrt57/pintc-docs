@@ -4,6 +4,13 @@ Tracks language spec versions and compiler releases.
 
 ## Compiler
 
+#### Slice 19 — Array literals
+
+- `ArrayLiteralExpr(List<Expr> Elements)` AST node
+- Parser: `[e, ...]` parsed in primary-expression position — element type inferred from context at the declaration site
+- Codegen: `EmitLocalVarDecl` special-cases `ArrayLiteralExpr` — emits each element expression and stores to `[EBP + base + i*stride]`; stride = `StackSlotSize(elemType)`
+- 179 tests (140 unit, 4 integration, 35 e2e)
+
 #### Slice 18 — Named return values
 
 - Named return list in function signatures: `fun f() -> (quot: u32, rem: u32)` — `FunDecl` gains `List<string?>? ReturnNames`; `ParseReturnType` populates it via `out` parameter

@@ -1,12 +1,12 @@
 # pintc-cs — Implementation Snapshot
 
-**As of Slice 18 (2026-06-17). 177 tests passing (140 unit, 4 integration, 33 e2e).**
+**As of Slice 19 (2026-06-18). 179 tests passing (140 unit, 4 integration, 35 e2e).**
 
 ---
 
 ## TL;DR
 
-- **Slices complete:** 1–18. Next: Slice 19.
+- **Slices complete:** 1–19. Next: Slice 20.
 - **Pipeline:** Lex → Parse → Resolve → TypeCheck → Codegen → PE emit. All phases wired end-to-end.
 - **Output:** PE32 EXE or DLL written directly — no assembler/linker dependency.
 - **Codegen:** stack-based x86, no register allocator. All values go through the stack (`push`/`pop`). EAX = expression result; ECX = right operand or scratch.
@@ -109,6 +109,7 @@ All nodes are C# `record`s. No `SourceSpan` yet.
 | `ToTypeExpr` | `Expr Value, string TargetType` |
 | `DivmodExpr` | `Expr A, Expr B` |
 | `MulWideExpr` | `Expr A, Expr B` |
+| `ArrayLiteralExpr` | `List<Expr> Elements` |
 
 `CallExpr.Qualifier` non-null for qualified calls (`C.add(...)` → Qualifier=`"C"`).
 `CallExpr.ArgNames` non-null when any argument is named; parallel to `Args` (null entry = positional). 3-arg compat constructor sets `ArgNames = null`.
@@ -247,6 +248,12 @@ Check(List<ModuleDecl>, ResolveResult) → IReadOnlyList<Diagnostic>
 - `EmitMultiVarDecl`: pre-allocates return buffer in the caller's frame (`RetBufOffsets[stmt]`); LEA EAX → save → push user args R-L → reload → push as callee arg → CALL → ADD ESP.
 - `EmitMultiAssignStmt`: SUB ESP to allocate a temp buffer → LEA EAX ESP → save → push user args R-L → reload → push as callee arg → CALL → ADD ESP twice → pop each return value into its existing local slot (or ADD ESP 4 for discards).
 - `FunCtx` additions: `string? ReturnType`, `List<string> FunReturnTypes`, `Dictionary<MultiVarDecl, int> RetBufOffsets`.
+
+### Array literals (Slice 19)
+
+- `ArrayLiteralExpr(List<Expr> Elements)` — parsed from `[e, e, ...]` in primary-expression position.
+- `EmitLocalVarDecl` special-cases `ArrayLiteralExpr`: parses the element type from `decl.TypeName` (`[N]T`), computes `stride = StackSlotSize(T)`, and emits each element into `[EBP + base + i*stride]`. All other contexts leave `ArrayLiteralExpr` unsupported (element type is not available without a typed context).
+- 179 tests (140 unit, 4 integration, 35 e2e).
 
 ### Named return values (Slice 18)
 
