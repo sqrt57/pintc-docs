@@ -238,10 +238,12 @@ Spec: [§ Records § Initialization](pint-spec-v0.7.md#initialization).
 182 tests passing (140 unit, 4 integration, 38 e2e).
 E2e: [slice20.pnt](examples/slice20.pnt).
 
-### Slice 21 — Enums
+### Slice 21 — Enums ✓
 
 Enum declarations, variant references (`E.Member`), equality, cast to/from underlying type.
 Spec: [§ Enums](pint-spec-v0.7.md#enums).
+186 tests passing (140 unit, 4 integration, 42 e2e).
+E2e: [slice21.pnt](examples/slice21.pnt).
 
 ### Slice 22 — Named break/continue
 

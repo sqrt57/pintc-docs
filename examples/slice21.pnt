@@ -1,0 +1,36 @@
+module main {
+
+    [dll_import(dll="kernel32.dll", entry_point="ExitProcess")]
+    [noreturn]
+    extern fun exit_process(code: u32) -> ();
+
+    enum Direction { North, South, East, West, }         // 0, 1, 2, 3
+    enum Color     { Red = 10, Green, Blue,      }       // 10, 11, 12
+    enum Flags : u8 { Read = 4, Write = 2, Exec = 1, }
+
+    [win32_entry]
+    [noreturn]
+    fun main() -> () {
+        // basic variant reference and equality
+        var d: Direction = Direction.North;
+        if (d != Direction.North) { exit_process(1); }
+        if (d == Direction.South) { exit_process(2); }
+
+        // auto-numbered from an explicit start; cast to underlying int
+        var c: Color = Color.Green;
+        if (c != Color.Green) { exit_process(3); }
+        var ci: i32 = cast(c, i32);
+        if (ci != 11) { exit_process(4); }
+
+        // cast from integer to enum
+        var d2: Direction = cast(2, Direction);   // East = 2
+        if (d2 != Direction.East) { exit_process(5); }
+
+        // explicit underlying type u8; cast to u8
+        var f: Flags = Flags.Read;
+        var fv: u8 = cast(f, u8);
+        if (fv != 4) { exit_process(6); }
+
+        exit_process(0);
+    }
+}

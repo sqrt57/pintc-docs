@@ -1,12 +1,12 @@
 # pintc-cs — Implementation Snapshot
 
-**As of Slice 20 (2026-06-18). 182 tests passing (140 unit, 4 integration, 38 e2e).**
+**As of Slice 21 (2026-06-18). 186 tests passing (140 unit, 4 integration, 42 e2e).**
 
 ---
 
 ## TL;DR
 
-- **Slices complete:** 1–20. Next: Slice 21.
+- **Slices complete:** 1–21. Next: Slice 22.
 - **Pipeline:** Lex → Parse → Resolve → TypeCheck → Codegen → PE emit. All phases wired end-to-end.
 - **Output:** PE32 EXE or DLL written directly — no assembler/linker dependency.
 - **Codegen:** stack-based x86, no register allocator. All values go through the stack (`push`/`pop`). EAX = expression result; ECX = right operand or scratch.
@@ -142,8 +142,8 @@ record ImportDecl(string ModuleName, string Alias);
 record ModuleDecl(string Name, List<ExternFunDecl> Externs, List<FunDecl> Funs,
                   List<ModuleVarDecl> Vars, List<RecordDecl> Records,
                   List<ImportDecl> Imports, List<string> Exports,
-                  List<ModuleConstDecl> Consts);
-// 5-param compat ctor omits Imports/Exports/Consts (used by unit/integration tests)
+                  List<ModuleConstDecl> Consts, List<EnumDecl> Enums);
+// 5-param compat ctor omits Imports/Exports/Consts/Enums (used by unit/integration tests)
 ```
 
 ### Attributes
@@ -175,7 +175,7 @@ Hand-written recursive descent.
 
 ### `ParseModule` dispatch
 
-`fun` → `ParseFunDecl` | `extern` → `ParseExternFunDecl` | `var` → `ParseModuleVarDecl` | `const` → `ParseModuleConstDecl` | `record` → `ParseRecordDecl` | `import` → `ParseImportDecl` | `export` → `ParseExportDecl`
+`fun` → `ParseFunDecl` | `extern` → `ParseExternFunDecl` | `var` → `ParseModuleVarDecl` | `const` → `ParseModuleConstDecl` | `record` → `ParseRecordDecl` | `enum` → `ParseEnumDecl` | `import` → `ParseImportDecl` | `export` → `ParseExportDecl`
 
 ### `ParseStmt` dispatch
 
@@ -248,6 +248,16 @@ Check(List<ModuleDecl>, ResolveResult) → IReadOnlyList<Diagnostic>
 - `EmitMultiVarDecl`: pre-allocates return buffer in the caller's frame (`RetBufOffsets[stmt]`); LEA EAX → save → push user args R-L → reload → push as callee arg → CALL → ADD ESP.
 - `EmitMultiAssignStmt`: SUB ESP to allocate a temp buffer → LEA EAX ESP → save → push user args R-L → reload → push as callee arg → CALL → ADD ESP twice → pop each return value into its existing local slot (or ADD ESP 4 for discards).
 - `FunCtx` additions: `string? ReturnType`, `List<string> FunReturnTypes`, `Dictionary<MultiVarDecl, int> RetBufOffsets`.
+
+### Enums (Slice 21)
+
+- `EnumVariant(string Name, Expr? Value)` and `EnumDecl(string Name, string? UnderlyingType, List<EnumVariant> Variants)` — new AST nodes. `ModuleDecl` gains `List<EnumDecl> Enums` (9th primary-ctor param; 5-param compat ctor passes `[]`).
+- Parser: `ParseEnumDecl` — `enum Name [: PrimitiveType] { Variant [= Expr], ... }`. Hooked into `ParseModule` dispatch alongside `record`.
+- Codegen: `record EnumInfo(string UnderlyingType, Dictionary<string, long> Variants)`. `BuildEnumMap` evaluates all variant values at compile time — auto-numbering uses `max(0, max(previous)+1)`. `FunCtx` gains `Dictionary<string, EnumInfo> EnumMap`.
+- `EmitExpr`: `FieldAccessExpr` where `VarName` is in `EnumMap` pushes the variant's integer value as `imm8` (0–127) or `imm32`. This case is checked before the general field-access path so enum names are never looked up as locals.
+- `CastExpr`: if `TargetType` is in `EnumMap`, the underlying type replaces it before the truncation switch — `cast(f, u8)` applies `AND EAX, 0xFF`; `cast(2, Direction)` with default `i32` underlying is a no-op.
+- `StackSlotSize`: enum types not in `recordMap` fall through to the default `return 4` — no change needed; all enum values occupy one 4-byte stack slot.
+- 186 tests (140 unit, 4 integration, 42 e2e).
 
 ### Record literals (Slice 20)
 

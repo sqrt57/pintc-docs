@@ -4,6 +4,15 @@ Tracks language spec versions and compiler releases.
 
 ## Compiler
 
+#### Slice 21 — Enums
+
+- `EnumVariant(string Name, Expr? Value)` and `EnumDecl(string Name, string? UnderlyingType, List<EnumVariant> Variants)` AST nodes; `ModuleDecl` gains `List<EnumDecl> Enums`
+- Parser: `enum Name [: Type] { Variant [= Expr], ... }` parsed via `ParseEnumDecl`; hooked into `ParseModule` dispatch
+- Codegen: `BuildEnumMap` evaluates all variant values at compile time (auto-numbering: `max(0, max(previous)+1)`); `EnumInfo` record holds underlying type and variant table; `FunCtx` gains `Dictionary<string, EnumInfo> EnumMap`
+- `EmitExpr`: `FieldAccessExpr` where `VarName` is an enum name pushes the variant's integer value as `imm8` or `imm32`
+- `CastExpr`: enum target types resolve to their underlying type before truncation — `cast(f, u8)` applies `AND EAX, 0xFF` via the u8 path; `cast(2, Direction)` is a no-op (default i32 underlying)
+- 186 tests (140 unit, 4 integration, 42 e2e)
+
 #### Slice 20 — Record literals
 
 - `RecordLiteralExpr(List<(string Field, Expr Value)> Fields)` AST node
