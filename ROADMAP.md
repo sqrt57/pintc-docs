@@ -259,6 +259,59 @@ Spec: [§ Float literals](pint-spec-v0.7.md#float-literals).
 196 tests passing (140 unit, 4 integration, 52 e2e).
 E2e: [slice23.pnt](examples/slice23.pnt).
 
+## Gap Fixes
+
+Known implementation gaps accumulated across slices. Grouped by theme; ordered by recommended fix sequence within each group.
+
+### Correctness
+
+These gaps allow invalid programs to compile silently. Highest priority.
+
+| Gap | Importance | Complexity | Impact |
+|-----|-----------|------------|--------|
+| **Resolver: nested blocks and `CallExpr` not checked** — undefined names inside `if`/`while`/`for` bodies and in call-expression position are never resolved. | Critical — silently compiles programs with dangling names; produces wrong code or runtime crashes. | Medium — Resolver must walk the full statement/expression tree instead of only top-level `CallStmt` nodes. | `Resolver.cs` only; no codegen changes. |
+| **TypeChecker: `CallExpr` arity and `return` types not checked** — wrong-arity calls and mismatched return types are accepted without error. | Critical — same class of bug as the resolver gap; silently wrong programs. | Medium — TypeChecker must walk `CallExpr` in all statement positions and compare return types against `FunDecl` signatures. | `TypeChecker.cs` only. |
+| **`ident.ident(...)` as a statement unhandled** — qualified calls (`M.f(...)`) work in expression position but not as standalone statements. | Medium — common pattern in multi-module programs; produces a confusing parse error at the use site. | Low — `ParseStmt` needs one additional lookahead branch for `ident . ident (`. | `Parser.cs` only. |
+
+### Structural
+
+These affect the whole pipeline. No other gap fix depends on them, but both unlock a broad class of improvements.
+
+| Gap | Importance | Complexity | Impact |
+|-----|-----------|------------|--------|
+| **No `SourceSpan` on AST nodes** — error messages carry no line or column, making them hard to act on. | High — developer experience blocker; every Pint user hits this immediately. | High — every AST node gains a `SourceSpan`; every `Parse*` method must propagate spans from tokens; diagnostic printing updated. | `Ast.cs` (all records), `Parser.cs` (all parse methods), `Resolver.cs`/`TypeChecker.cs` diagnostic construction. Self-contained; no codegen touch. |
+| **No type AST** — types are plain strings throughout; makes real type inference, type aliases, and generics impossible. | High — foundational; blocks all future type-system work. | Very high — pervasive change across every pipeline stage; all string type comparisons become structural matches on type nodes. Best done last among structural fixes. | Every layer: `Ast.cs`, `Parser.cs`, `Resolver.cs`, `TypeChecker.cs`, `Codegen.cs`. Largest single change in the codebase. |
+
+### Codegen limits
+
+Hard limits that silently corrupt output once certain size thresholds are crossed.
+
+| Gap | Importance | Complexity | Impact |
+|-----|-----------|------------|--------|
+| **`AddEspImm8`/`SubEspImm8` use `imm8`** — stack adjustments at call sites break with >31 arguments or return values. | Medium — unlikely in practice today but silent memory corruption if hit. | Low — add `imm32` variants to `X86.cs`; select encoding by magnitude at each call site. | `X86.cs` additions; small `Codegen.cs` changes at `EmitCallExpr`/`EmitMultiVarDecl`. |
+| **EBP offsets use `sbyte`** — locals capped at ~127 bytes total; breaks with large records or many variables. | Medium-High — hit in real programs with non-trivial data. | High — every EBP-relative instruction encoding must select `disp8` vs `disp32` by offset magnitude; touches all local/param access throughout `Codegen.cs` and `X86.cs`. Fix after the `imm8` gap above — same pattern. | `Codegen.cs` (all local/param access), `X86.cs` (all EBP helpers). |
+| **Multi-return calls not usable as expressions** — a multi-return call must appear in `MultiVarDecl` or `MultiAssignStmt`; can't be passed inline or discarded. | Medium — expressiveness gap; forces callers to introduce temporary variables. | Medium — `EmitExpr` needs a buffer-allocation path for `CallExpr` targeting a multi-return callee, mirroring `EmitMultiVarDecl` inline. | `Codegen.cs` `EmitExpr`; minor `Parser.cs` tweak to permit the call in more positions. |
+
+### Float completeness
+
+Slice 23 scoped floats to scalar locals. These gaps round out float support.
+
+| Gap | Importance | Complexity | Impact |
+|-----|-----------|------------|--------|
+| **No float↔int cast** — `cast(f, u32)` and `cast(n, f32)` not supported. | Medium — needed for any real program mixing integer and float math. | Low — `FILD`/`FISTP` (int→float) and `FIST`/`FISTP` (float→int) sequences; hook into `CastExpr` and `ToTypeExpr`. | `Codegen.cs` `EmitExpr`/`EmitExprFloat`; small `X86.cs` additions. |
+| **No module-scope float vars** — `var x: f32 = 1.5;` at module level is unsupported. | Low-Medium — module vars are uncommon for floats; workaround is a local. | Low-Medium — `.data` section currently stores 4-byte values; `f64` needs 8; `EmitModuleVar` and PE data layout require updating. | `Codegen.cs` module-var emit; `PeWriter.cs` `.data` layout. |
+| **Floats not supported in records or arrays** — float fields and float array elements are unhandled. | Medium — can't aggregate floats into structs or process float arrays. | Medium — `StackSlotSize` already returns 8 for `f64`; `EmitRecordLiteralInto` and the array-literal path in `EmitLocalVarDecl` need to route float elements through `EmitExprFloat`; field-access read path needs `FLD` instead of `MOV`. | `Codegen.cs` `EmitLocalVarDecl`, `EmitAssignStmt`, `EmitRecordLiteralInto`, `EmitExpr` (field read). |
+| **Floats not supported in multi-return** — a function cannot include float values in a tuple return. | Medium — blocks float-heavy APIs that naturally return multiple values. | Medium — the hidden-pointer convention writes return values via `[ptr+offset]`; float slots need `FSTP [ptr+offset]` on the callee side and `FLD [ptr+offset]` on the caller unpack side. | `Codegen.cs` `EmitReturnStmt`, `EmitMultiVarDecl`, `EmitMultiAssignStmt`. |
+
+### Minor / harmless
+
+Latent issues with no current correctness impact.
+
+| Gap | Importance | Complexity | Impact |
+|-----|-----------|------------|--------|
+| **Duplicate epilogue bytes on explicit `return`** — when a function ends with `return` and lacks `[noreturn]`, a dead `leave`/`ret` sequence is emitted after it. | Low — dead bytes; no observable effect. | Low — track whether the last emitted statement was `ReturnStmt`; skip epilogue if so. | `Codegen.cs` `EmitFun` only. |
+| **`CollectLocals` shares slot for same-named sibling for-loop vars** — two `for` loops with the same loop variable name allocate one slot. | Low — harmless today since the loops are sequential; latent issue if the language gains nested or concurrent same-name scopes. | Low-Medium — `CollectLocals` needs scope-aware allocation: enter/exit scope on block boundaries and track names per scope. | `Codegen.cs` `CollectLocals` only. |
+
 ## Future Work
 
 Features worth revisiting once the initial version is working:
